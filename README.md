@@ -1,59 +1,113 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<div align="center">
+    <img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo">
+    <h1 align="center">Computer Based Test (CBT) System</h1>
+    <p align="center">
+        Aplikasi Ujian Berbasis Komputer Modern menggunakan <b>Laravel 11</b>, <b>Livewire 3</b>, dan <b>Tailwind CSS</b>.
+        <br />
+        <a href="#fitur-utama"><strong>Jelajahi Fitur »</strong></a>
+        <br />
+        <br />
+    </p>
+</div>
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+---
 
-## About Laravel
+## 🚀 Tentang Aplikasi
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+**CBT Rony** adalah platform Computer Based Test modern yang dirancang untuk memudahkan manajemen ujian sekolah maupun kampus. Aplikasi ini mendukung **Tiga Peran Utama** (Admin/Guru, Pengawas, dan Siswa) serta menyediakan antarmuka pengisian ujian yang cepat, responsif, tanpa *loading* ulang halaman (Single Page Application-like) berkat **Laravel Livewire 3**.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Dibekali dengan **5 variasi tipe soal ujian standar AKM & UN**, pengacakan otomatis, batas waktu, dan fitur pencegahan kecurangan berbasis PIN/Token!
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## ✨ Fitur Utama
 
-## Learning Laravel
+- 🔐 **Multi-Role Authentication** (Guru / Dosen, Pengawas, dan Siswa).
+- 📝 **5 Tipe Soal Terintegrasi:**
+  1. **Pilihan Ganda Biasa** (1 Jawaban Benar)
+  2. **Pilihan Ganda Kompleks** (Banyak Centang / Jawaban Benar)
+  3. **Benar / Salah** (True / False)
+  4. **Isian Singkat** (Dinilai Presisi secara Otomatis oleh Sistem)
+  5. **Uraian / Essay** (Koreksi Subjektif Manual)
+- ⏱️ **Manajemen Ujian Ketat:** Set batas waktu (*Time Limit*) dan Token PIN keamanan.
+- 🎲 **Anti-Cheat Logic:** Soal dan Opsi Pilihan Ganda secara cerdas diacak urutannya *(shuffle)* untuk setiap siswa yang berbeda.
+- 📥 **Mass Import & Export (Excel):** Unggah ratusan soal sekaligus via Template Excel, dan unduh rekapan nilai akhir siswa dengan cepat dalam format `.xlsx`.
+- 🖨️ **Cetak Hasil Ujian (PDF):** Rekapan data ujian dan nilai siap didownload menjadi arsip Dokumen PDF siap cetak.
+- 💅 **UI/UX Modern:** Desain interaktif yang responsif dengan efek kaca (glassmorphism), transisi halus, menggunakan **Tailwind CSS**.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## 🛠️ Teknologi yang Digunakan
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+*   [Laravel 11.x](https://laravel.com) - PHP Framework
+*   [Livewire 3](https://livewire.laravel.com/) - Dynamic Front-End Framework
+*   [Alpine.js](https://alpinejs.dev/) - Lightweight JavaScript Framework
+*   [Tailwind CSS v3](https://tailwindcss.com/) - Utility-first CSS Framework
+*   [Laravel Excel (Maatwebsite)](https://laravel-excel.com/) - Penangan Import/Export Excel
+*   [barryvdh/laravel-dompdf](https://github.com/barryvdh/laravel-dompdf) - Generator PDF
+*   MySQL - Relational Database
 
-## Laravel Sponsors
+## 💻 Cara Instalasi (Local Development)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Jika Anda ingin menjalankan aplikasi ini di komputer lokal (localhost), ikuti langkah-langkah berikut:
 
-### Premium Partners
+**1. Clone Repository:**
+```bash
+git clone https://github.com/RonyRisvaldoLumbanBatu/CBT-Rony.git
+cd CBT-Rony
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+**2. Install Dependensi PHP (Composer) & Node (NPM):**
+```bash
+composer install
+npm install
+```
 
-## Contributing
+**3. Konfigurasi Environment:**
+Salin file `.env.example` menjadi `.env`, lalu buat *App Key*.
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Ubah pengaturan database di file `.env` Anda:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=nama_database_anda
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-## Code of Conduct
+**4. Migrasi Database dan Seeder (Akun Bawaan):**
+Pastikan database sudah Anda buat di MySQL/XAMPP.
+```bash
+php artisan migrate:fresh --seed
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+**5. Kompilasi Aset Frontend (Tailwind/Vite):**
+```bash
+npm run build
+```
 
-## Security Vulnerabilities
+**6. Jalankan Server Lokal Laravel:**
+```bash
+php artisan serve
+```
+Kunjungi `http://localhost:8000` di Web Browser Anda!
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## 🔒 Akses Default (Setelah Seeder)
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Jika Anda menjalankan langkah `migrate --seed`, Anda dapat langsung login menggunakan akun uji coba di bawah ini (Password untuk semua akun adalah: `password`):
+
+| Role       | Email                      | Password   |
+| ---------- | -------------------------- | ---------- |
+| **Guru**   | `teacher@example.com`      | `password` |
+| **Pengawas**| `proctor@example.com`     | `password` |
+| **Siswa**  | `student@example.com`      | `password` |
+
+*(Nb: Anda tentu dapat membuat / register akun baru langsung dari halaman depan pendaftaran).*
+
+---
+
+> **Dibuat dengan 🔥 oleh Rony Risvaldo Lumban Batu** <br>
+> Jangan Ragu untuk memberikan *Star* (⭐) pada Repositori ini jika terbukti membantu proses belajar kita semua!
