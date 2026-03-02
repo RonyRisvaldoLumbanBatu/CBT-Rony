@@ -49,6 +49,9 @@ Route::get('/guru/ujian', \App\Livewire\TeacherDashboard::class)->middleware(['a
 // Halaman untuk kelola soal (Khusus Guru)
 Route::get('/guru/ujian/{id}/soal', \App\Livewire\ManageQuestions::class)->middleware(['auth', 'role:guru']);
 
+// Halaman untuk kelola nilai dan essay (Khusus Guru)
+Route::get('/guru/ujian/{id}/nilai', \App\Livewire\GradeExam::class)->middleware(['auth', 'role:guru']);
+
 // Rute Export PDF (Khusus Guru)
 Route::get('/guru/ujian/{id}/export', [\App\Http\Controllers\ExportController::class, 'exportPdf'])->middleware(['auth', 'role:guru']);
 

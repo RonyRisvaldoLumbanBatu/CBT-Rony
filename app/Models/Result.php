@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Result extends Model
 {
-    protected $fillable = ['user_id', 'exam_id', 'score', 'answers_data'];
+    protected $fillable = ['user_id', 'exam_id', 'score', 'answers_data', 'essay_scores', 'is_essay_graded'];
 
     protected $casts = [
         'answers_data' => 'array',
+        'essay_scores' => 'array',
+        'is_essay_graded' => 'boolean',
     ];
 
     // Relasi: Nilai ini milik ujian yang mana?
