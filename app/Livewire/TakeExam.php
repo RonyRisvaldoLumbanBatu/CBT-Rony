@@ -72,6 +72,11 @@ class TakeExam extends Component
                 'type' => $soal->type,
                 'options' => $options,
             ];
+
+            // Cegah bug Livewire: Checkbox butuh inisialisasi awal Array kosong []
+            if ($soal->type === 'pg_kompleks') {
+                $this->answers[$soal->id] = [];
+            }
         }
         $this->questionsData = $acakSoal;
 
@@ -155,7 +160,7 @@ class TakeExam extends Component
                 }
             } elseif ($q['type'] === 'isian') {
                 $correctOption = \App\Models\Option::where('question_id', $q['id'])->where('is_correct', true)->first();
-                if ($correctOption && strtolower(trim($userAns)) === strtolower(trim($correctOption->option_text))) {
+                if ($correctOption && is_string($userAns) && strtolower(trim($userAns)) === strtolower(trim($correctOption->option_text))) {
                     $jawabanBenar++;
                 }
             }
