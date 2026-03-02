@@ -267,6 +267,18 @@
                                 Skor & Penilaian
                             </a>
 
+                            <a href="/guru/ujian/{{ $exam->id }}/analisis"
+                                class="flex items-center gap-2 bg-white dark:bg-gray-800 border border-fuchsia-200 dark:border-fuchsia-700 text-fuchsia-600 dark:text-fuchsia-500 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-fuchsia-50 dark:hover:bg-fuchsia-900/30 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                    stroke="currentColor" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
+                                </svg>
+                                Analisis Soal
+                            </a>
+
                             <a href="/guru/ujian/{{ $exam->id }}/export"
                                 class="flex items-center gap-2 bg-white dark:bg-gray-800 border border-rose-200 dark:border-rose-700 text-rose-600 dark:text-rose-500 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-rose-50 dark:hover:bg-rose-900/30 transition">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
