@@ -21,4 +21,10 @@ class Exam extends Model
     {
         return $this->hasMany(Question::class);
     }
+
+    // 3. Relasi: Satu ujian punya BANYAK hasil (result) pengerjaan
+    public function results()
+    {
+        return $this->hasMany(Result::class);
+    }
 }
