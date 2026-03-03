@@ -154,24 +154,24 @@
 
             <div class="flex items-center gap-3 bg-indigo-50 dark:bg-gray-700 border border-indigo-100 dark:border-gray-600 px-5 py-2.5 rounded-xl transition-colors duration-300"
                 x-data="{ 
-                                                timeLeft: @entangle('timeLeft'),
-                                                init() {
-                                                    setInterval(() => {
-                                                        if (this.timeLeft > 0) {
-                                                            this.timeLeft--;
-                                                        } else if (this.timeLeft === 0) {
-                                                            $wire.submitExam(); // Kumpulkan skor otomatis saat waktu habis
-                                                            this.timeLeft = -1; // Hindari pengulangan trigger
-                                                        }
-                                                    }, 1000);
-                                                },
-                                                formatTime(seconds) {
-                                                    if (seconds <= 0) return '0:00';
-                                                    let m = Math.floor(seconds / 60);
-                                                    let s = seconds % 60;
-                                                    return m + ':' + s.toString().padStart(2, '0');
-                                                }
-                                             }">
+                                                    timeLeft: @entangle('timeLeft'),
+                                                    init() {
+                                                        setInterval(() => {
+                                                            if (this.timeLeft > 0) {
+                                                                this.timeLeft--;
+                                                            } else if (this.timeLeft === 0) {
+                                                                $wire.submitExam(); // Kumpulkan skor otomatis saat waktu habis
+                                                                this.timeLeft = -1; // Hindari pengulangan trigger
+                                                            }
+                                                        }, 1000);
+                                                    },
+                                                    formatTime(seconds) {
+                                                        if (seconds <= 0) return '0:00';
+                                                        let m = Math.floor(seconds / 60);
+                                                        let s = seconds % 60;
+                                                        return m + ':' + s.toString().padStart(2, '0');
+                                                    }
+                                                 }">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                     stroke="currentColor" class="w-6 h-6 text-indigo-600 dark:text-indigo-400 animate-pulse">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -186,7 +186,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
 
-            <div
+            <div x-data="{ fontSize: 18 }"
                 class="lg:col-span-3 bg-white dark:bg-gray-800 p-8 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-colors duration-300">
 
                 @php
@@ -194,15 +194,32 @@
                 @endphp
 
                 <div wire:key="soal-area-{{ $currentQuestion['id'] }}">
-                    <div class="mb-8 border-b border-gray-100 dark:border-gray-700 pb-6 transition-colors duration-300">
-                        <span
-                            class="inline-block bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-300 text-xs font-bold px-3 py-1.5 rounded-full mb-4">
-                            SOAL NOMOR {{ $currentQuestionIndex + 1 }}
-                        </span>
-                        <p class="text-xl text-gray-800 dark:text-gray-100 font-medium leading-relaxed">
-                            {{ $currentQuestion['question_text'] }}
-                        </p>
+                    <div
+                        class="mb-8 border-b border-gray-100 dark:border-gray-700 pb-6 transition-colors duration-300 flex justify-between items-start">
+                        <div>
+                            <span
+                                class="inline-block bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-300 text-xs font-bold px-3 py-1.5 rounded-full mb-4">
+                                SOAL NOMOR {{ $currentQuestionIndex + 1 }}
+                            </span>
+                        </div>
+                        <div
+                            class="flex items-center gap-2 bg-gray-50 dark:bg-gray-700/50 p-1.5 rounded-lg border border-gray-200 dark:border-gray-600">
+                            <button @click="fontSize = Math.max(12, fontSize - 2)"
+                                class="w-8 h-8 flex items-center justify-center rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 shadow-sm font-bold text-sm transition"
+                                title="Perkecil Teks">A-</button>
+                            <button @click="fontSize = 18"
+                                class="w-8 h-8 flex items-center justify-center rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 shadow-sm font-bold text-sm transition"
+                                title="Reset Teks">A</button>
+                            <button @click="fontSize = Math.min(32, fontSize + 2)"
+                                class="w-8 h-8 flex items-center justify-center rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 shadow-sm font-bold text-sm transition"
+                                title="Perbesar Teks">A+</button>
+                        </div>
                     </div>
+
+                    <p class="text-gray-800 dark:text-gray-100 font-medium leading-relaxed mb-6 transition-all"
+                        :style="`font-size: ${fontSize}px`">
+                        {{ $currentQuestion['question_text'] }}
+                    </p>
 
                     @if(!empty($currentQuestion['image_path']))
                         <div class="mb-6">
@@ -248,8 +265,8 @@
                                         wire:model.live="answers.{{ $currentQuestion['id'] }}" value="{{ $option['id'] }}"
                                         class="w-5 h-5 text-indigo-600 dark:text-indigo-400 border-gray-300 dark:border-gray-600 focus:ring-indigo-500 dark:focus:ring-indigo-400 dark:bg-gray-800 dark:checked:bg-indigo-400">
 
-                                    <span
-                                        class="text-gray-700 dark:text-gray-200 font-medium text-lg {{ isset($answers[$currentQuestion['id']]) && $answers[$currentQuestion['id']] == $option['id'] ? 'dark:text-indigo-100' : '' }}">{{ $option['option_text'] }}</span>
+                                    <span :style="`font-size: ${Math.max(14, fontSize - 2)}px`"
+                                        class="text-gray-700 dark:text-gray-200 font-medium transition-all {{ isset($answers[$currentQuestion['id']]) && $answers[$currentQuestion['id']] == $option['id'] ? 'dark:text-indigo-100' : '' }}">{{ $option['option_text'] }}</span>
                                 </label>
                             @endforeach
                         @elseif($currentQuestion['type'] === 'pg_kompleks')
@@ -261,10 +278,31 @@
                                         wire:model.live="answers.{{ $currentQuestion['id'] }}" value="{{ $option['id'] }}"
                                         class="w-5 h-5 rounded text-indigo-600 dark:text-indigo-400 border-gray-300 dark:border-gray-600 focus:ring-indigo-500 dark:focus:ring-indigo-400 dark:bg-gray-800 dark:checked:bg-indigo-400">
 
-                                    <span
-                                        class="text-gray-700 dark:text-gray-200 font-medium text-lg {{ isset($answers[$currentQuestion['id']]) && is_array($answers[$currentQuestion['id']]) && in_array($option['id'], $answers[$currentQuestion['id']]) ? 'dark:text-indigo-100' : '' }}">{{ $option['option_text'] }}</span>
+                                    <span :style="`font-size: ${Math.max(14, fontSize - 2)}px`"
+                                        class="text-gray-700 dark:text-gray-200 font-medium transition-all {{ isset($answers[$currentQuestion['id']]) && is_array($answers[$currentQuestion['id']]) && in_array($option['id'], $answers[$currentQuestion['id']]) ? 'dark:text-indigo-100' : '' }}">{{ $option['option_text'] }}</span>
                                 </label>
                             @endforeach
+                        @endif
+                    </div>
+
+                    <div
+                        class="flex flex-col sm:flex-row justify-between items-center bg-gray-50 dark:bg-gray-900/20 p-4 rounded-xl border border-gray-100 dark:border-gray-700/50 mb-6">
+                        <label
+                            class="flex items-center gap-3 cursor-pointer text-yellow-600 dark:text-yellow-500 font-bold hover:opacity-80 transition-opacity">
+                            <input type="checkbox" wire:click="toggleDoubt" @if(in_array($currentQuestion['id'], $doubtfulQuestions)) checked @endif
+                                class="w-6 h-6 text-yellow-500 focus:ring-yellow-500 border-gray-300 rounded cursor-pointer">
+                            Ragu - Ragu
+                        </label>
+
+                        @if(isset($answers[$currentQuestion['id']]) && $answers[$currentQuestion['id']] !== '' && $answers[$currentQuestion['id']] !== [])
+                            <button wire:click="clearAnswer"
+                                class="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-bold transition-colors mt-4 sm:mt-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
+                                    stroke="currentColor" class="w-4 h-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                                Hapus Jawaban
+                            </button>
                         @endif
                     </div>
                 </div>
@@ -306,27 +344,36 @@
                     <div class="grid grid-cols-5 gap-2 mb-8">
                         @foreach($questionsData as $index => $q)
                             @php
-                                // Cek apakah soal ini sudah dijawab
-                                // Untuk checkbox (array), pastikan array tidak kosong. Untuk yg lain, pastikan tidak empty string
                                 $isAnswered = isset($answers[$q['id']]) && $answers[$q['id']] !== '' && $answers[$q['id']] !== [];
-                                // Cek apakah ini adalah soal yang sedang dibuka
                                 $isActive = $index === $currentQuestionIndex;
+                                $isDoubt = in_array($q['id'], $doubtfulQuestions);
+
+                                $bgClass = 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'; // Default Belum
+
+                                if ($isDoubt) {
+                                    $bgClass = 'bg-yellow-400 text-yellow-900 border border-yellow-500 dark:border-yellow-600 shadow-inner'; // Ragu
+                                } elseif ($isAnswered) {
+                                    $bgClass = 'bg-green-500 text-white border border-green-600 dark:border-green-500 shadow-inner'; // Dijawab & Yakin
+                                }
                             @endphp
 
                             <button wire:click="jumpToQuestion({{ $index }})" class="w-full aspect-square rounded-lg flex items-center justify-center text-sm font-bold transition-all duration-200
-                                                                                                    {{ $isActive ? 'ring-2 ring-offset-2 dark:ring-offset-gray-800 ring-indigo-500 transform scale-105' : '' }}
-                                                                                                    {{ $isAnswered ? 'bg-green-500 text-white border border-green-600 dark:border-green-500 shadow-inner' : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700' }}
-                                                                                                    ">
+                                                                                                            {{ $isActive ? 'ring-2 ring-offset-2 dark:ring-offset-gray-800 ring-indigo-500 transform scale-105' : '' }}
+                                                                                                            {{ $bgClass }}
+                                                                                                            ">
                                 {{ $index + 1 }}
                             </button>
                         @endforeach
                     </div>
 
                     <div class="space-y-3 mb-6">
-                        <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                        <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 font-medium">
                             <div class="w-4 h-4 bg-green-500 rounded-sm"></div> Sudah Dijawab
                         </div>
-                        <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                        <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 font-medium">
+                            <div class="w-4 h-4 bg-yellow-400 rounded-sm border border-yellow-500"></div> Ragu-Ragu
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 font-medium">
                             <div
                                 class="w-4 h-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-sm">
                             </div> Belum Dijawab

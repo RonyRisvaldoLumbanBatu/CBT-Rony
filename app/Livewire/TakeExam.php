@@ -26,11 +26,14 @@ class TakeExam extends Component
     // Variabel baru untuk menampung soal yang sudah diacak
     public $questionsData = [];
 
+    // Menyimpan daftar ID soal yang ditandai ragu-ragu
+    public $doubtfulQuestions = [];
+
     public function verifyPin()
     {
         if (strtoupper($this->inputPin) === strtoupper($this->exam->token)) {
             $this->isPinVerified = true;
-            session()->put('pin_verified_'.$this->exam->id, true);
+            session()->put('pin_verified_' . $this->exam->id, true);
         } else {
             session()->flash('pin_error', 'PIN ujian tidak valid atau salah!');
         }
@@ -56,7 +59,7 @@ class TakeExam extends Component
         if (empty($this->exam->token)) {
             $this->isPinVerified = true; // Jika guru belum set PIN, langsung loncat
         } else {
-            $this->isPinVerified = session()->get('pin_verified_'.$id, false);
+            $this->isPinVerified = session()->get('pin_verified_' . $id, false);
         }
 
         // 3. MESIN PENGURUTAN TIPE & PENGACAK SOAL (ANTI-NYONTEK)
@@ -96,7 +99,7 @@ class TakeExam extends Component
         $this->questionsData = $acakSoal;
 
         // 4. TIMER ANTI-CHEAT MENGGUNAKAN SESSION
-        $kunciSession = 'ujian_selesai_'.$this->exam->id;
+        $kunciSession = 'ujian_selesai_' . $this->exam->id;
 
         if (session()->has($kunciSession)) {
             $waktuSelesai = session()->get($kunciSession);
@@ -116,6 +119,12 @@ class TakeExam extends Component
         }
     }
 
+    // Auto-Save setiap ada perubahan jawaban
+    public function updatedAnswers()
+    {
+        session()->put('ujian_answers_' . $this->exam->id, $this->answers);
+    }
+
     public function nextQuestion()
     {
         // Sesuaikan validasi jumlah soal dengan array baru
@@ -125,7 +134,7 @@ class TakeExam extends Component
             event(new \App\Events\StudentExamUpdate(
                 $this->exam->id,
                 auth()->user()->name,
-                'Sedang mengerjakan Soal '.($this->currentQuestionIndex + 1)
+                'Sedang mengerjakan Soal ' . ($this->currentQuestionIndex + 1)
             ));
         }
     }
@@ -142,7 +151,34 @@ class TakeExam extends Component
         // Pastikan nomor yang dituju valid (ada di dalam array soal)
         if ($index >= 0 && $index < count($this->questionsData)) {
             $this->currentQuestionIndex = $index;
+            session()->put('ujian_index_' . $this->exam->id, $this->currentQuestionIndex);
         }
+    }
+
+    // Fitur Ragu-Ragu
+    public function toggleDoubt()
+    {
+        $qId = $this->questionsData[$this->currentQuestionIndex]['id'];
+        if (in_array($qId, $this->doubtfulQuestions)) {
+            $this->doubtfulQuestions = array_diff($this->doubtfulQuestions, [$qId]);
+        } else {
+            $this->doubtfulQuestions[] = $qId;
+        }
+        session()->put('ujian_doubtful_' . $this->exam->id, $this->doubtfulQuestions);
+    }
+
+    // Fitur Hapus Jawaban
+    public function clearAnswer()
+    {
+        $qId = $this->questionsData[$this->currentQuestionIndex]['id'];
+
+        if ($this->questionsData[$this->currentQuestionIndex]['type'] === 'pg_kompleks') {
+            $this->answers[$qId] = [];
+        } else {
+            unset($this->answers[$qId]);
+        }
+
+        $this->updatedAnswers();
     }
 
     public function submitExam()
@@ -151,10 +187,10 @@ class TakeExam extends Component
 
         // Filter Total Soal yang otomatis dinilai sistem
         $tipeOtomatis = ['pg', 'pg_kompleks', 'benar_salah', 'isian'];
-        $totalSoalOtomatis = count(array_filter($this->questionsData, fn ($q) => in_array($q['type'], $tipeOtomatis)));
+        $totalSoalOtomatis = count(array_filter($this->questionsData, fn($q) => in_array($q['type'], $tipeOtomatis)));
 
         foreach ($this->questionsData as $q) {
-            if (! isset($this->answers[$q['id']])) {
+            if (!isset($this->answers[$q['id']])) {
                 continue;
             }
 
@@ -197,11 +233,18 @@ class TakeExam extends Component
         event(new \App\Events\StudentExamUpdate(
             $this->exam->id,
             auth()->user()->name,
-            'Telah Mengumpulkan Ujian dengan Nilai: '.$nilaiAkhir
+            'Telah Mengumpulkan Ujian dengan Nilai: ' . $nilaiAkhir
         ));
 
-        session()->forget('ujian_selesai_'.$this->exam->id);
-        session()->flash('sukses', 'Ujian selesai! Nilai kamu: '.$nilaiAkhir);
+        session()->forget([
+            'ujian_selesai_' . $this->exam->id,
+            'ujian_questions_' . $this->exam->id,
+            'ujian_answers_' . $this->exam->id,
+            'ujian_doubtful_' . $this->exam->id,
+            'ujian_index_' . $this->exam->id,
+            'pin_verified_' . $this->exam->id
+        ]);
+        session()->flash('sukses', 'Ujian selesai! Nilai kamu: ' . $nilaiAkhir);
 
         return redirect()->route('dashboard');
     }
@@ -212,7 +255,7 @@ class TakeExam extends Component
         event(new \App\Events\StudentExamUpdate(
             $this->exam->id,
             auth()->user()->name,
-            '⚠️ PELANGGARAN #'.$strikeCount.' - Keluar dari Layar Ujian!'
+            '⚠️ PELANGGARAN #' . $strikeCount . ' - Keluar dari Layar Ujian!'
         ));
     }
 

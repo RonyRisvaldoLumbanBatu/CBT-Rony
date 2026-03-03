@@ -8,7 +8,7 @@ class Exam extends Model
 {
     // Tambahkan 'is_active' dan 'token' di dalam array $fillable
     protected $fillable = ['title', 'description', 'time_limit', 'is_active', 'token'];
-
+    
     protected function casts(): array
     {
         return [
