@@ -53,6 +53,10 @@ class ManageQuestions extends Component
 
     public $youtube_url = '';
 
+    public $jawaban_benar_bs = 'Benar'; // Default untuk Benar/Salah
+
+    public $kunci_isian = ''; // Untuk isian singkat
+
     public function mount($id)
     {
         $this->exam = Exam::findOrFail($id);
