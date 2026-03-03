@@ -2,17 +2,19 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
 use App\Models\Exam;
-use App\Models\Result;
 use App\Models\Option;
+use App\Models\Result;
 use Livewire\Attributes\Layout;
+use Livewire\Component;
 
 #[Layout('layouts.app')]
 class ItemAnalysis extends Component
 {
     public Exam $exam;
+
     public $analysisData = [];
+
     public $totalParticipants = 0;
 
     public function mount($id)
@@ -42,7 +44,7 @@ class ItemAnalysis extends Component
                     $distribusiOpsi[$opt->id] = [
                         'text' => $opt->option_text,
                         'is_correct' => $opt->is_correct,
-                        'count' => 0
+                        'count' => 0,
                     ];
                 }
             }
@@ -52,8 +54,9 @@ class ItemAnalysis extends Component
                 // answers_data format: ['question_id' => 'user_answer']
                 $answersData = $result->answers_data ?? [];
 
-                if (!isset($answersData[$question->id])) {
+                if (! isset($answersData[$question->id])) {
                     $salah++; // Tidak dijawab dianggap salah
+
                     continue;
                 }
 

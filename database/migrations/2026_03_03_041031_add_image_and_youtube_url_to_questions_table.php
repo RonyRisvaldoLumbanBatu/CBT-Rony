@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('exams', function (Blueprint $table) {
-            $table->string('token', 10)->nullable()->after('is_active');
+        Schema::table('questions', function (Blueprint $table) {
+            $table->string('image_path')->nullable()->after('question_text');
+            $table->string('youtube_url')->nullable()->after('image_path');
         });
     }
 
@@ -21,8 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('exams', function (Blueprint $table) {
-            $table->dropColumn('token');
+        Schema::table('questions', function (Blueprint $table) {
+            $table->dropColumn(['image_path', 'youtube_url']);
         });
     }
 };

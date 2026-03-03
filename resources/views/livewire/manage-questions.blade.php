@@ -17,25 +17,14 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-3">
-            <button wire:click="openBankModal"
-                class="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 text-gray-700 dark:text-gray-200 font-bold py-2.5 px-5 rounded-xl shadow-sm transition">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                    stroke="currentColor" class="w-5 h-5 text-indigo-500">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
-                </svg>
-                Ambil dari Bank
-            </button>
-            <button wire:click="openModal"
-                class="flex items-center gap-2 bg-indigo-600 dark:bg-indigo-500 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white font-bold py-2.5 px-5 rounded-xl shadow-sm transition">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                    stroke="currentColor" class="w-5 h-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-                Tambah Manual
-            </button>
-        </div>
+        <button wire:click="openModal"
+            class="flex items-center gap-2 bg-indigo-600 dark:bg-indigo-500 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white font-bold py-2.5 px-5 rounded-xl shadow-sm transition">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            Tambah Manual
+        </button>
     </div>
 
     @if(session('sukses'))
@@ -170,6 +159,33 @@
                         {{ $q->question_text }}
                     </p>
 
+                    @if($q->image_path)
+                        <div class="mb-4">
+                            <img src="{{ Storage::url($q->image_path) }}" alt="Gambar Soal"
+                                class="max-h-64 object-contain rounded-lg border border-gray-200 dark:border-gray-700">
+                        </div>
+                    @endif
+
+                    @if($q->youtube_url)
+                        <div
+                            class="mb-4 aspect-video max-w-lg rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+                            @php
+                                // Parse Youtube URL to get video ID for embed
+                                preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i', $q->youtube_url, $match);
+                                $youtubeId = $match[1] ?? null;
+                            @endphp
+                            @if($youtubeId)
+                                <iframe width="100%" height="100%" src="https://www.youtube.com/embed/{{ $youtubeId }}"
+                                    frameborder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowfullscreen></iframe>
+                            @else
+                                <a href="{{ $q->youtube_url }}" target="_blank" class="text-indigo-600 hover:underline">Lihat Video
+                                    Terkait</a>
+                            @endif
+                        </div>
+                    @endif
+
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         @foreach($q->options as $opt)
                             <div
@@ -301,6 +317,49 @@
                                 class="text-red-500 dark:text-red-400 text-xs mt-1">{{ $message }}</span> @enderror
                             </div>
 
+                            <div
+                                class="mb-5 bg-gray-50/50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700 space-y-4">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Gambar
+                                        Pendukung (Opsional)</label>
+                                    @if($existing_image && !$image)
+                                        <div class="mb-2 relative inline-block">
+                                            <img src="{{ Storage::url($existing_image) }}"
+                                                class="h-32 rounded border border-gray-200 dark:border-gray-600">
+                                            <span
+                                                class="absolute top-1 right-1 bg-gray-900/60 text-white text-[10px] px-2 py-0.5 rounded-full">Saat
+                                                Ini</span>
+                                        </div>
+                                    @endif
+                                    @if($image)
+                                        <div class="mb-2 relative inline-block">
+                                            <img src="{{ $image->temporaryUrl() }}"
+                                                class="h-32 rounded border border-indigo-400">
+                                            <span
+                                                class="absolute top-1 right-1 bg-indigo-600 text-white text-[10px] px-2 py-0.5 rounded-full">Preview
+                                                Baru</span>
+                                        </div>
+                                    @endif
+                                    <input type="file" wire:model="image" id="img-{{ $questionIdToEdit ?? 'new' }}"
+                                        accept="image/*"
+                                        class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 dark:file:bg-indigo-900/30 dark:file:text-indigo-400 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-900/50 transition">
+                                    <div wire:loading wire:target="image" class="text-sm text-indigo-500 font-medium mt-1">
+                                        Mengupload gambar...</div>
+                                    @error('image') <span
+                                    class="text-red-500 dark:text-red-400 text-xs mt-1">{{ $message }}</span> @enderror
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Link
+                                        YouTube (Opsional)</label>
+                                    <input type="url" wire:model="youtube_url"
+                                        class="w-full rounded-xl border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition"
+                                        placeholder="Contoh: https://www.youtube.com/watch?v=dQw4w9WgXcQ">
+                                    @error('youtube_url') <span
+                                    class="text-red-500 dark:text-red-400 text-xs mt-1">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+
                             <!-- Opsi Khusus Pilihan Ganda -->
                             <div x-show="type === 'pg' || type === 'pg_kompleks'" x-cloak>
                                 <div
@@ -424,49 +483,6 @@
                         </div>
                     </form>
 
-                </div>
-            </div>
-        </div>
-    @endif
-
-    @if($isBankModalOpen)
-        <div class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-gray-900 bg-opacity-50 dark:bg-opacity-80 backdrop-blur-sm transition-opacity">
-            <div class="relative w-full max-w-lg p-4">
-                <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700">
-                    <div class="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-700">
-                        <h3 class="text-xl font-bold text-gray-800 dark:text-white">
-                            Ambil dari Bank Soal
-                        </h3>
-                        <button wire:click="closeBankModal" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-white rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center transition">
-                            <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                            </svg>
-                        </button>
-                    </div>
-
-                    <form wire:submit.prevent="importFromBank" class="p-6 space-y-5">
-                        <div class="mb-5">
-                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Pilih Bank Soal Tersedia</label>
-                            @if(count($availableBanks) > 0)
-                                <select wire:model="selectedBankId" class="w-full rounded-xl border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition">
-                                    <option value="">-- Pilih Bank --</option>
-                                    @foreach($availableBanks as $b)
-                                        <option value="{{ $b->id }}">{{ $b->title }} ({{ $b->questions_count }} Soal)</option>
-                                    @endforeach
-                                </select>
-                                @error('selectedBankId') <span class="text-red-500 dark:text-red-400 text-xs mt-1">{{ $message }}</span> @enderror
-                            @else
-                                <div class="bg-amber-50 dark:bg-amber-900/30 text-amber-600 border-l-4 border-amber-500 p-3 rounded text-sm font-medium">Anda belum membuat satupun Bank Soal.</div>
-                            @endif
-                        </div>
-
-                        <div class="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
-                            <button type="button" wire:click="closeBankModal" class="px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 transition">Batal</button>
-                            <button type="submit" @if(count($availableBanks) === 0) disabled @endif class="px-5 py-2.5 text-sm font-bold text-white bg-indigo-600 dark:bg-indigo-500 rounded-xl hover:bg-indigo-700 dark:hover:bg-indigo-600 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                                Copas Soal Sekarang
-                            </button>
-                        </div>
-                    </form>
                 </div>
             </div>
         </div>

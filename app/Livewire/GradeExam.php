@@ -2,11 +2,10 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
 use App\Models\Exam;
 use App\Models\Result;
-use App\Models\Question;
 use Livewire\Attributes\Layout;
+use Livewire\Component;
 
 #[Layout('layouts.app')]
 class GradeExam extends Component
@@ -15,9 +14,13 @@ class GradeExam extends Component
 
     // Untuk Modal / Data spesifik
     public $isModalOpen = false;
+
     public $selectedResult;
+
     public $essayQuestions = [];
+
     public $essayAnswers = [];
+
     public $essayScores = []; // ex: [question_id => score]
 
     public function mount($id)
@@ -72,21 +75,24 @@ class GradeExam extends Component
 
         // Hitung ulang PG persis seperti di TakeExam.php (Mencegah bug sinkronisasi nilai)
         foreach ($soalOtomatis as $q) {
-            if (!isset($answersData[$q->id]))
+            if (! isset($answersData[$q->id])) {
                 continue;
+            }
 
             $userAns = $answersData[$q->id];
 
             if ($q->type === 'pg' || $q->type === 'benar_salah') {
                 $isCorrect = \App\Models\Option::where('id', $userAns)->where('is_correct', true)->exists();
-                if ($isCorrect)
+                if ($isCorrect) {
                     $jawabanBenar++;
+                }
             } elseif ($q->type === 'pg_kompleks' && is_array($userAns)) {
                 $correctOptionIds = \App\Models\Option::where('question_id', $q->id)->where('is_correct', true)->pluck('id')->toArray();
                 sort($userAns);
                 sort($correctOptionIds);
-                if ($userAns == $correctOptionIds)
+                if ($userAns == $correctOptionIds) {
                     $jawabanBenar++;
+                }
             } elseif ($q->type === 'isian') {
                 $correctOption = \App\Models\Option::where('question_id', $q->id)->where('is_correct', true)->first();
                 if ($correctOption && strtolower(trim($userAns)) === strtolower(trim($correctOption->option_text))) {
@@ -137,7 +143,7 @@ class GradeExam extends Component
 
         return view('livewire.grade-exam', [
             'results' => $results,
-            'hasEssay' => $hasEssay
+            'hasEssay' => $hasEssay,
         ]);
     }
 }

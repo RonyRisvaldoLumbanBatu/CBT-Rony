@@ -2,23 +2,28 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
 use App\Models\Exam;
 use App\Models\Question;
 use Livewire\Attributes\Layout;
+use Livewire\Component;
 
 #[Layout('layouts.app')]
 class TeacherDashboard extends Component
 {
     // Variabel penampung form
     public $title = '';
+
     public $description = '';
+
     public $time_limit = 60;
 
     // Variabel khusus mode Edit & Hapus
     public $isEditMode = false;
+
     public $examIdToEdit = null;
+
     public $isDeleteModalOpen = false;
+
     public $examIdToDelete = null;
 
     // === VARIABEL BARU UNTUK FITUR PENCARIAN ===
@@ -28,13 +33,13 @@ class TeacherDashboard extends Component
     {
         $this->validate([
             'title' => 'required|min:5',
-            'time_limit' => 'required|numeric|min:1'
+            'time_limit' => 'required|numeric|min:1',
         ]);
 
         Exam::create([
             'title' => $this->title,
             'description' => $this->description,
-            'time_limit' => $this->time_limit
+            'time_limit' => $this->time_limit,
         ]);
 
         $this->resetForm();
@@ -56,14 +61,14 @@ class TeacherDashboard extends Component
     {
         $this->validate([
             'title' => 'required|min:5',
-            'time_limit' => 'required|numeric|min:1'
+            'time_limit' => 'required|numeric|min:1',
         ]);
 
         $exam = Exam::findOrFail($this->examIdToEdit);
         $exam->update([
             'title' => $this->title,
             'description' => $this->description,
-            'time_limit' => $this->time_limit
+            'time_limit' => $this->time_limit,
         ]);
 
         $this->resetForm();
@@ -106,18 +111,18 @@ class TeacherDashboard extends Component
     public function toggleStatus($id)
     {
         $exam = Exam::findOrFail($id);
-        $newStatus = !$exam->is_active;
+        $newStatus = ! $exam->is_active;
 
         // Buat PIN dinamis (6 Karakter alphanumeric) saat Ujian diaktifkan
         $tokenPin = $newStatus ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::random(6)) : null;
 
         $exam->update([
             'is_active' => $newStatus,
-            'token' => $tokenPin
+            'token' => $tokenPin,
         ]);
 
         $status = $newStatus ? 'dibuka' : 'ditutup';
-        session()->flash('sukses', "Ujian '{$exam->title}' berhasil $status! PIN Ujian baru: " . ($tokenPin ?? '-'));
+        session()->flash('sukses', "Ujian '{$exam->title}' berhasil $status! PIN Ujian baru: ".($tokenPin ?? '-'));
     }
 
     public function render()
@@ -125,7 +130,7 @@ class TeacherDashboard extends Component
         // 1. Logika Pencarian Pintar
         $query = Exam::query();
         if (strlen($this->search) > 0) {
-            $query->where('title', 'like', '%' . $this->search . '%');
+            $query->where('title', 'like', '%'.$this->search.'%');
         }
         $exams = $query->latest()->get();
 

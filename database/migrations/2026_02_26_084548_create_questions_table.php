@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('questions', function (Blueprint $table) {
             $table->id();
             // Sambungkan ke tabel exams. cascadeOnDelete = Jika ujian dihapus, soalnya ikut terhapus otomatis!
-            $table->foreignId('exam_id')->constrained()->cascadeOnDelete(); 
+            $table->foreignId('exam_id')->constrained()->cascadeOnDelete();
             $table->text('question_text'); // Isi pertanyaannya
             $table->timestamps();
         });

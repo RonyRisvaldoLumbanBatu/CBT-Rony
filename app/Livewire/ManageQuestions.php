@@ -6,6 +6,7 @@ use App\Imports\QuestionsImport;
 use App\Models\Exam;
 use App\Models\Option;
 use App\Models\Question;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -27,13 +28,6 @@ class ManageQuestions extends Component
 
     public $questionIdToEdit = null;
 
-    // === VARIABEL UNTUK FITUR BANK SOAL ===
-    public $isBankModalOpen = false;
-
-    public $availableBanks = [];
-
-    public $selectedBankId = null;
-
     // Variabel Form
     public $question_text = '';
 
@@ -52,9 +46,12 @@ class ManageQuestions extends Component
     // Tambahan variable untuk tipe soal lain
     public $jawaban_benar_kompleks = []; // Array untuk PG Kompleks
 
-    public $jawaban_benar_bs = 'Benar'; // Default untuk Benar/Salah
+    // Variabel Tambahan Media
+    public $image;
 
-    public $kunci_isian = ''; // Untuk isian singkat
+    public $existing_image = null;
+
+    public $youtube_url = '';
 
     public function mount($id)
     {
@@ -79,52 +76,6 @@ class ManageQuestions extends Component
         session()->flash('sukses', 'Sihir berhasil! Ratusan soal sukses diimport!');
     }
 
-    // === FITUR AMBIL DARI BANK SOAL ===
-    public function openBankModal()
-    {
-        $this->availableBanks = \App\Models\QuestionBank::withCount('questions')->where('teacher_id', auth()->id())->get();
-        $this->isBankModalOpen = true;
-    }
-
-    public function closeBankModal()
-    {
-        $this->isBankModalOpen = false;
-        $this->selectedBankId = null;
-    }
-
-    public function importFromBank()
-    {
-        $this->validate(['selectedBankId' => 'required']);
-
-        $bankQuestions = \App\Models\BankQuestion::where('question_bank_id', $this->selectedBankId)->with('options')->get();
-
-        if ($bankQuestions->isEmpty()) {
-            session()->flash('sukses', 'Bank Soal kosong. Tidak ada soal yang ditambahkan.');
-            $this->closeBankModal();
-
-            return;
-        }
-
-        foreach ($bankQuestions as $bq) {
-            $q = Question::create([
-                'exam_id' => $this->exam->id,
-                'question_text' => $bq->question_text,
-                'type' => $bq->type,
-            ]);
-
-            foreach ($bq->options as $opt) {
-                Option::create([
-                    'question_id' => $q->id,
-                    'option_text' => $opt->option_text,
-                    'is_correct' => $opt->is_correct,
-                ]);
-            }
-        }
-
-        $this->closeBankModal();
-        session()->flash('sukses', $bankQuestions->count().' soal berhasil disalin dari Bank Soal!');
-    }
-
     // === FITUR BUKA TUTUP MODAL ===
     public function openModal()
     {
@@ -140,7 +91,7 @@ class ManageQuestions extends Component
 
     public function resetForm()
     {
-        $this->reset(['question_text', 'type', 'opsi_a', 'opsi_b', 'opsi_c', 'opsi_d', 'isEditMode', 'questionIdToEdit', 'jawaban_benar_kompleks', 'kunci_isian']);
+        $this->reset(['question_text', 'type', 'opsi_a', 'opsi_b', 'opsi_c', 'opsi_d', 'isEditMode', 'questionIdToEdit', 'jawaban_benar_kompleks', 'kunci_isian', 'image', 'existing_image', 'youtube_url']);
         $this->jawaban_benar = 'A';
         $this->jawaban_benar_bs = 'Benar';
     }
@@ -152,6 +103,8 @@ class ManageQuestions extends Component
         $this->questionIdToEdit = $question->id;
         $this->question_text = $question->question_text;
         $this->type = $question->type;
+        $this->existing_image = $question->image_path;
+        $this->youtube_url = $question->youtube_url;
 
         if ($this->type === 'pg' || $this->type === 'pg_kompleks') {
             // Asumsi selalu ada 4 opsi berurutan
@@ -210,6 +163,8 @@ class ManageQuestions extends Component
         $rules = [
             'question_text' => 'required|string',
             'type' => 'required|in:pg,essay,pg_kompleks,benar_salah,isian',
+            'image' => 'nullable|image|max:2048',
+            'youtube_url' => 'nullable|url',
         ];
 
         if ($this->type === 'pg' || $this->type === 'pg_kompleks') {
@@ -231,25 +186,32 @@ class ManageQuestions extends Component
 
         $this->validate($rules);
 
+        $dataToSave = [
+            'question_text' => $this->question_text,
+            'type' => $this->type,
+            'youtube_url' => $this->youtube_url,
+        ];
+
+        if ($this->image) {
+            if ($this->existing_image) {
+                Storage::disk('public')->delete($this->existing_image);
+            }
+            $dataToSave['image_path'] = $this->image->store('questions', 'public');
+        }
+
         if ($this->isEditMode) {
             // Update Soal Lama
             $question = Question::findOrFail($this->questionIdToEdit);
-            $question->update([
-                'question_text' => $this->question_text,
-                'type' => $this->type,
-            ]);
+            $question->update($dataToSave);
 
             // Hapus opsi lama, kita buat ulang jika bukan pure text essay
             if ($this->type !== 'essay') {
                 $question->options()->delete();
             }
         } else {
+            $dataToSave['exam_id'] = $this->exam->id;
             // Buat Soal Baru
-            $question = Question::create([
-                'exam_id' => $this->exam->id,
-                'question_text' => $this->question_text,
-                'type' => $this->type,
-            ]);
+            $question = Question::create($dataToSave);
         }
 
         // Masukkan Opsi ke Database jika type bukan essay

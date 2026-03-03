@@ -154,24 +154,24 @@
 
             <div class="flex items-center gap-3 bg-indigo-50 dark:bg-gray-700 border border-indigo-100 dark:border-gray-600 px-5 py-2.5 rounded-xl transition-colors duration-300"
                 x-data="{ 
-                                            timeLeft: @entangle('timeLeft'),
-                                            init() {
-                                                setInterval(() => {
-                                                    if (this.timeLeft > 0) {
-                                                        this.timeLeft--;
-                                                    } else if (this.timeLeft === 0) {
-                                                        $wire.submitExam(); // Kumpulkan skor otomatis saat waktu habis
-                                                        this.timeLeft = -1; // Hindari pengulangan trigger
-                                                    }
-                                                }, 1000);
-                                            },
-                                            formatTime(seconds) {
-                                                if (seconds <= 0) return '0:00';
-                                                let m = Math.floor(seconds / 60);
-                                                let s = seconds % 60;
-                                                return m + ':' + s.toString().padStart(2, '0');
-                                            }
-                                         }">
+                                                timeLeft: @entangle('timeLeft'),
+                                                init() {
+                                                    setInterval(() => {
+                                                        if (this.timeLeft > 0) {
+                                                            this.timeLeft--;
+                                                        } else if (this.timeLeft === 0) {
+                                                            $wire.submitExam(); // Kumpulkan skor otomatis saat waktu habis
+                                                            this.timeLeft = -1; // Hindari pengulangan trigger
+                                                        }
+                                                    }, 1000);
+                                                },
+                                                formatTime(seconds) {
+                                                    if (seconds <= 0) return '0:00';
+                                                    let m = Math.floor(seconds / 60);
+                                                    let s = seconds % 60;
+                                                    return m + ':' + s.toString().padStart(2, '0');
+                                                }
+                                             }">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                     stroke="currentColor" class="w-6 h-6 text-indigo-600 dark:text-indigo-400 animate-pulse">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -203,6 +203,32 @@
                             {{ $currentQuestion['question_text'] }}
                         </p>
                     </div>
+
+                    @if(!empty($currentQuestion['image_path']))
+                        <div class="mb-6">
+                            <img src="{{ Storage::url($currentQuestion['image_path']) }}" alt="Gambar Soal"
+                                class="max-h-80 object-contain rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                        </div>
+                    @endif
+
+                    @if(!empty($currentQuestion['youtube_url']))
+                        <div
+                            class="mb-6 aspect-video w-full max-w-2xl rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm">
+                            @php
+                                preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i', $currentQuestion['youtube_url'], $match);
+                                $youtubeId = $match[1] ?? null;
+                            @endphp
+                            @if($youtubeId)
+                                <iframe width="100%" height="100%" src="https://www.youtube.com/embed/{{ $youtubeId }}"
+                                    frameborder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowfullscreen></iframe>
+                            @else
+                                <a href="{{ $currentQuestion['youtube_url'] }}" target="_blank"
+                                    class="text-indigo-600 hover:underline">Lihat Video Terkait</a>
+                            @endif
+                        </div>
+                    @endif
 
                     <div class="space-y-4 mb-10">
                         @if($currentQuestion['type'] === 'essay')
@@ -288,9 +314,9 @@
                             @endphp
 
                             <button wire:click="jumpToQuestion({{ $index }})" class="w-full aspect-square rounded-lg flex items-center justify-center text-sm font-bold transition-all duration-200
-                                                                                            {{ $isActive ? 'ring-2 ring-offset-2 dark:ring-offset-gray-800 ring-indigo-500 transform scale-105' : '' }}
-                                                                                            {{ $isAnswered ? 'bg-green-500 text-white border border-green-600 dark:border-green-500 shadow-inner' : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700' }}
-                                                                                            ">
+                                                                                                    {{ $isActive ? 'ring-2 ring-offset-2 dark:ring-offset-gray-800 ring-indigo-500 transform scale-105' : '' }}
+                                                                                                    {{ $isAnswered ? 'bg-green-500 text-white border border-green-600 dark:border-green-500 shadow-inner' : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700' }}
+                                                                                                    ">
                                 {{ $index + 1 }}
                             </button>
                         @endforeach

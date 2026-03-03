@@ -10,6 +10,7 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 class ExamResultsExport implements FromCollection, WithHeadings, WithMapping
 {
     protected $examId;
+
     protected $rank = 1;
 
     public function __construct($examId)
@@ -35,7 +36,7 @@ class ExamResultsExport implements FromCollection, WithHeadings, WithMapping
             'Nama Mahasiswa',
             'NIM/Email',
             'Nilai Akhir',
-            'Waktu Pengumpulan'
+            'Waktu Pengumpulan',
         ];
     }
 
@@ -46,7 +47,7 @@ class ExamResultsExport implements FromCollection, WithHeadings, WithMapping
             $result->user->name,
             $result->user->email,
             $result->score,
-            $result->created_at->timezone('Asia/Jakarta')->format('d/m/Y H:i:s')
+            $result->created_at->timezone('Asia/Jakarta')->format('d/m/Y H:i:s'),
         ];
     }
 }

@@ -2,15 +2,16 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
 use App\Models\Exam;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
+use Livewire\Component;
 
 #[Layout('layouts.app')]
 class ProctorDashboard extends Component
 {
     public Exam $exam;
+
     public $logs = []; // Array penampung laporan aktivitas real-time
 
     public function mount($id)
@@ -26,7 +27,7 @@ class ProctorDashboard extends Component
         array_unshift($this->logs, [
             'nama' => $dataSinyal['studentName'],
             'pesan' => $dataSinyal['statusMessage'],
-            'waktu' => now()->format('H:i:s')
+            'waktu' => now()->format('H:i:s'),
         ]);
     }
 

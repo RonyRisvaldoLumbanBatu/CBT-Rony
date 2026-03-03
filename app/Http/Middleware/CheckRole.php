@@ -17,7 +17,7 @@ class CheckRole
     {
         // Jika user yang sedang login role-nya TIDAK SAMA dengan yang diminta, TENDANG!
         if (auth()->user()->role !== $role) {
-            abort(403, 'AKSES DITOLAK! Halaman ini khusus untuk ' . strtoupper($role) . '.');
+            abort(403, 'AKSES DITOLAK! Halaman ini khusus untuk '.strtoupper($role).'.');
         }
 
         // Jika sesuai, silakan masuk

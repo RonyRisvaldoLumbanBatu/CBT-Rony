@@ -3,10 +3,10 @@
 namespace App\Exports;
 
 use Maatwebsite\Excel\Concerns\FromArray;
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class TemplateExport implements FromArray, WithHeadings, ShouldAutoSize
+class TemplateExport implements FromArray, ShouldAutoSize, WithHeadings
 {
     // Mengatur nama-nama kolom (Header)
     public function headings(): array
@@ -18,7 +18,7 @@ class TemplateExport implements FromArray, WithHeadings, ShouldAutoSize
             'opsi_b',     // Kosongkan jika bukan pilihan ganda
             'opsi_c',     // Kosongkan jika bukan pilihan ganda
             'opsi_d',     // Kosongkan jika bukan pilihan ganda
-            'kunci_jawaban'// Kunci Jawaban. Cara isinya berbeda tergantung jenis_soal (lihat sampel)
+            'kunci_jawaban', // Kunci Jawaban. Cara isinya berbeda tergantung jenis_soal (lihat sampel)
         ];
     }
 
@@ -33,7 +33,7 @@ class TemplateExport implements FromArray, WithHeadings, ShouldAutoSize
                 'Surabaya',
                 'Jakarta',
                 'Medan',
-                'C'
+                'C',
             ],
             [
                 'pg_kompleks',
@@ -42,7 +42,7 @@ class TemplateExport implements FromArray, WithHeadings, ShouldAutoSize
                 'Python',
                 'CSS',
                 'Java',
-                'B,D' // Dipisah dengan koma, tanpa spasi setelahnya boleh
+                'B,D', // Dipisah dengan koma, tanpa spasi setelahnya boleh
             ],
             [
                 'benar_salah',
@@ -51,7 +51,7 @@ class TemplateExport implements FromArray, WithHeadings, ShouldAutoSize
                 '',
                 '',
                 '',
-                'Salah' // Isi dengan 'Benar' atau 'Salah'
+                'Salah', // Isi dengan 'Benar' atau 'Salah'
             ],
             [
                 'isian',
@@ -60,7 +60,7 @@ class TemplateExport implements FromArray, WithHeadings, ShouldAutoSize
                 '',
                 '',
                 '',
-                'Soekarno' // Ketik string kunci jawaban presisi
+                'Soekarno', // Ketik string kunci jawaban presisi
             ],
             [
                 'essay',
@@ -69,7 +69,7 @@ class TemplateExport implements FromArray, WithHeadings, ShouldAutoSize
                 '',
                 '',
                 '',
-                '' // Kosongkan
+                '', // Kosongkan
             ],
         ];
     }

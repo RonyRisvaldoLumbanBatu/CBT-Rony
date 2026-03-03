@@ -56,12 +56,6 @@ Route::get('/guru/ujian/{id}/nilai', \App\Livewire\GradeExam::class)->middleware
 // Halaman untuk analisis kesukaran butir soal (Khusus Guru)
 Route::get('/guru/ujian/{id}/analisis', \App\Livewire\ItemAnalysis::class)->middleware(['auth', 'role:guru']);
 
-// Halaman Manajemen Bank Soal (Khusus Guru)
-Route::get('/guru/bank-soal', \App\Livewire\QuestionBankIndex::class)->middleware(['auth', 'role:guru']);
-
-// Halaman Manajemen Soal di dalam Bank (Khusus Guru)
-Route::get('/guru/bank-soal/{id}', \App\Livewire\QuestionBankShow::class)->middleware(['auth', 'role:guru'])->name('guru.bank.show');
-
 // Rute Export PDF (Khusus Guru)
 Route::get('/guru/ujian/{id}/export', [\App\Http\Controllers\ExportController::class, 'exportPdf'])->middleware(['auth', 'role:guru']);
 

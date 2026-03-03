@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\User;
 use App\Models\Exam;
-use App\Models\Question;
 use App\Models\Option;
+use App\Models\Question;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
         // 3. Buat Soal Nomor 1
         $soal1 = Question::create([
             'exam_id' => $ujian->id,
-            'question_text' => 'Apa kepanjangan dari PHP pada saat pertama kali diciptakan?'
+            'question_text' => 'Apa kepanjangan dari PHP pada saat pertama kali diciptakan?',
         ]);
         Option::create(['question_id' => $soal1->id, 'option_text' => 'Pre-Hypertext Processor', 'is_correct' => false]);
         Option::create(['question_id' => $soal1->id, 'option_text' => 'Personal Home Page', 'is_correct' => true]); // Jawaban Benar
@@ -39,7 +39,7 @@ class DatabaseSeeder extends Seeder
         // 4. Buat Soal Nomor 2
         $soal2 = Question::create([
             'exam_id' => $ujian->id,
-            'question_text' => 'Manakah di bawah ini yang merupakan fitur ajaib Laravel untuk membuat web reaktif tanpa JavaScript?'
+            'question_text' => 'Manakah di bawah ini yang merupakan fitur ajaib Laravel untuk membuat web reaktif tanpa JavaScript?',
         ]);
         Option::create(['question_id' => $soal2->id, 'option_text' => 'Laravel Sanctum', 'is_correct' => false]);
         Option::create(['question_id' => $soal2->id, 'option_text' => 'Laravel Eloquent', 'is_correct' => false]);

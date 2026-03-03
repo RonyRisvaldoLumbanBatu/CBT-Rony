@@ -2,8 +2,8 @@
 
 namespace App\Imports;
 
-use App\Models\Question;
 use App\Models\Option;
+use App\Models\Question;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -23,7 +23,7 @@ class QuestionsImport implements ToCollection, WithHeadingRow
     {
         foreach ($rows as $row) {
             // Abaikan baris kosong
-            if (!isset($row['soal']) || empty($row['soal'])) {
+            if (! isset($row['soal']) || empty($row['soal'])) {
                 continue;
             }
 

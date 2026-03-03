@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Question extends Model
 {
-    protected $fillable = ['exam_id', 'question_text', 'type'];
+    protected $fillable = ['exam_id', 'question_text', 'type', 'image_path', 'youtube_url'];
 
     // Relasi ke Atas: Soal ini MILIK ujian apa?
     public function exam()
