@@ -37,8 +37,12 @@ new class extends Component {
 
                     @if(auth()->user()->role === 'guru')
                         <x-nav-link :href="route('guru.dashboard')" :active="request()->routeIs('guru.dashboard')"
-                            class="font-bold text-base mt-1 text-gray-600 dark:text-gray-300">
+                            class="font-bold text-base mt-1 text-gray-600 dark:text-gray-300" wire:navigate>
                             Dasbor Guru
+                        </x-nav-link>
+                        <x-nav-link href="/guru/bank-soal" :active="request()->is('guru/bank-soal*')"
+                            class="font-bold text-base mt-1 text-gray-600 dark:text-gray-300" wire:navigate>
+                            Bank Soal
                         </x-nav-link>
                     @else
                         <x-nav-link :href="route('siswa.dashboard')" :active="request()->routeIs('siswa.dashboard')"
@@ -130,8 +134,12 @@ new class extends Component {
         <div class="pt-2 pb-3 space-y-1">
             @if(auth()->user()->role === 'guru')
                 <x-nav-link :href="route('guru.dashboard')" :active="request()->routeIs('guru.dashboard')"
-                    class="font-bold text-base mt-1 text-gray-600 dark:text-gray-300">
+                    class="font-bold text-base mt-1 text-gray-600 dark:text-gray-300 block px-4 py-2" wire:navigate>
                     Dasbor Guru
+                </x-nav-link>
+                <x-nav-link href="/guru/bank-soal" :active="request()->is('guru/bank-soal*')"
+                    class="font-bold text-base mt-1 text-gray-600 dark:text-gray-300 block px-4 py-2" wire:navigate>
+                    Bank Soal
                 </x-nav-link>
             @else
                 <x-nav-link :href="route('siswa.dashboard')" :active="request()->routeIs('siswa.dashboard')"

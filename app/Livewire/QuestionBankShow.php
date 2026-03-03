@@ -2,23 +2,16 @@
 
 namespace App\Livewire;
 
-use App\Imports\QuestionsImport;
-use App\Models\Exam;
-use App\Models\Option;
-use App\Models\Question;
+use App\Models\BankOption;
+use App\Models\BankQuestion;
+use App\Models\QuestionBank;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Livewire\WithFileUploads;
-use Maatwebsite\Excel\Facades\Excel;
 
 #[Layout('layouts.app')]
-class ManageQuestions extends Component
+class QuestionBankShow extends Component
 {
-    use WithFileUploads;
-
-    public Exam $exam;
-
-    public $file;
+    public QuestionBank $bank;
 
     // === VARIABEL UNTUK FITUR MANUAL & EDIT ===
     public $isModalOpen = false;
@@ -27,17 +20,10 @@ class ManageQuestions extends Component
 
     public $questionIdToEdit = null;
 
-    // === VARIABEL UNTUK FITUR BANK SOAL ===
-    public $isBankModalOpen = false;
-
-    public $availableBanks = [];
-
-    public $selectedBankId = null;
-
     // Variabel Form
     public $question_text = '';
 
-    public $type = 'pg'; // Type soal (pg atau essay)
+    public $type = 'pg'; // Type soal (pg atau essay dsb)
 
     public $opsi_a = '';
 
@@ -49,7 +35,6 @@ class ManageQuestions extends Component
 
     public $jawaban_benar = 'A'; // Default A untuk PG Biasa
 
-    // Tambahan variable untuk tipe soal lain
     public $jawaban_benar_kompleks = []; // Array untuk PG Kompleks
 
     public $jawaban_benar_bs = 'Benar'; // Default untuk Benar/Salah
@@ -58,74 +43,12 @@ class ManageQuestions extends Component
 
     public function mount($id)
     {
-        $this->exam = Exam::findOrFail($id);
+        // Pastikan hanya guru pemilik yang bisa akses
+        $this->bank = QuestionBank::where('id', $id)
+            ->where('teacher_id', auth()->id())
+            ->firstOrFail();
     }
 
-    // === FITUR DOWNLOAD TEMPLATE ===
-    public function downloadTemplate()
-    {
-        return Excel::download(new \App\Exports\TemplateExport, 'Template_Soal_Ujian.xlsx');
-    }
-
-    // === FITUR IMPORT EXCEL ===
-    public function importExcel()
-    {
-        $this->validate([
-            'file' => 'required|mimes:xlsx,xls,csv|max:2048',
-        ]);
-
-        Excel::import(new QuestionsImport($this->exam->id), $this->file);
-        $this->reset('file');
-        session()->flash('sukses', 'Sihir berhasil! Ratusan soal sukses diimport!');
-    }
-
-    // === FITUR AMBIL DARI BANK SOAL ===
-    public function openBankModal()
-    {
-        $this->availableBanks = \App\Models\QuestionBank::withCount('questions')->where('teacher_id', auth()->id())->get();
-        $this->isBankModalOpen = true;
-    }
-
-    public function closeBankModal()
-    {
-        $this->isBankModalOpen = false;
-        $this->selectedBankId = null;
-    }
-
-    public function importFromBank()
-    {
-        $this->validate(['selectedBankId' => 'required']);
-
-        $bankQuestions = \App\Models\BankQuestion::where('question_bank_id', $this->selectedBankId)->with('options')->get();
-
-        if ($bankQuestions->isEmpty()) {
-            session()->flash('sukses', 'Bank Soal kosong. Tidak ada soal yang ditambahkan.');
-            $this->closeBankModal();
-
-            return;
-        }
-
-        foreach ($bankQuestions as $bq) {
-            $q = Question::create([
-                'exam_id' => $this->exam->id,
-                'question_text' => $bq->question_text,
-                'type' => $bq->type,
-            ]);
-
-            foreach ($bq->options as $opt) {
-                Option::create([
-                    'question_id' => $q->id,
-                    'option_text' => $opt->option_text,
-                    'is_correct' => $opt->is_correct,
-                ]);
-            }
-        }
-
-        $this->closeBankModal();
-        session()->flash('sukses', $bankQuestions->count().' soal berhasil disalin dari Bank Soal!');
-    }
-
-    // === FITUR BUKA TUTUP MODAL ===
     public function openModal()
     {
         $this->resetForm();
@@ -145,16 +68,20 @@ class ManageQuestions extends Component
         $this->jawaban_benar_bs = 'Benar';
     }
 
-    // === FITUR KLIK EDIT ===
     public function editQuestion($id)
     {
-        $question = Question::with('options')->findOrFail($id);
+        $question = BankQuestion::with('options')->findOrFail($id);
+
+        // Cek Keamanan
+        if ($question->question_bank_id !== $this->bank->id) {
+            abort(403);
+        }
+
         $this->questionIdToEdit = $question->id;
         $this->question_text = $question->question_text;
         $this->type = $question->type;
 
         if ($this->type === 'pg' || $this->type === 'pg_kompleks') {
-            // Asumsi selalu ada 4 opsi berurutan
             $options = $question->options;
             if ($options->count() >= 4) {
                 $this->opsi_a = $options[0]->option_text;
@@ -204,7 +131,6 @@ class ManageQuestions extends Component
         $this->isModalOpen = true;
     }
 
-    // === FITUR SIMPAN DATA (CREATE & UPDATE) ===
     public function saveQuestion()
     {
         $rules = [
@@ -232,27 +158,23 @@ class ManageQuestions extends Component
         $this->validate($rules);
 
         if ($this->isEditMode) {
-            // Update Soal Lama
-            $question = Question::findOrFail($this->questionIdToEdit);
+            $question = BankQuestion::findOrFail($this->questionIdToEdit);
             $question->update([
                 'question_text' => $this->question_text,
                 'type' => $this->type,
             ]);
 
-            // Hapus opsi lama, kita buat ulang jika bukan pure text essay
             if ($this->type !== 'essay') {
                 $question->options()->delete();
             }
         } else {
-            // Buat Soal Baru
-            $question = Question::create([
-                'exam_id' => $this->exam->id,
+            $question = BankQuestion::create([
+                'question_bank_id' => $this->bank->id,
                 'question_text' => $this->question_text,
                 'type' => $this->type,
             ]);
         }
 
-        // Masukkan Opsi ke Database jika type bukan essay
         if ($this->type === 'pg' || $this->type === 'pg_kompleks') {
             $pilihan = [
                 'A' => $this->opsi_a,
@@ -269,45 +191,48 @@ class ManageQuestions extends Component
                     $is_correct = in_array($huruf, $this->jawaban_benar_kompleks);
                 }
 
-                Option::create([
-                    'question_id' => $question->id,
+                BankOption::create([
+                    'bank_question_id' => $question->id,
                     'option_text' => $teksOpsi,
                     'is_correct' => $is_correct,
                 ]);
             }
         } elseif ($this->type === 'benar_salah') {
-            Option::create([
-                'question_id' => $question->id,
+            BankOption::create([
+                'bank_question_id' => $question->id,
                 'option_text' => 'Benar',
                 'is_correct' => ($this->jawaban_benar_bs === 'Benar'),
             ]);
-            Option::create([
-                'question_id' => $question->id,
+            BankOption::create([
+                'bank_question_id' => $question->id,
                 'option_text' => 'Salah',
                 'is_correct' => ($this->jawaban_benar_bs === 'Salah'),
             ]);
         } elseif ($this->type === 'isian') {
-            Option::create([
-                'question_id' => $question->id,
+            BankOption::create([
+                'bank_question_id' => $question->id,
                 'option_text' => $this->kunci_isian,
                 'is_correct' => true,
             ]);
         }
 
         $this->closeModal();
-        session()->flash('sukses', $this->isEditMode ? 'Soal berhasil direvisi!' : 'Soal baru berhasil ditambahkan manual!');
+        session()->flash('sukses', $this->isEditMode ? 'Soal berhasil direvisi!' : 'Soal baru berhasil disimpan ke bank!');
     }
 
     public function deleteQuestion($id)
     {
-        Question::findOrFail($id)->delete();
-        session()->flash('sukses', 'Soal berhasil dihapus!');
+        $q = BankQuestion::findOrFail($id);
+        if ($q->question_bank_id === $this->bank->id) {
+            $q->delete();
+            session()->flash('sukses', 'Soal berhasil dihapus dari bank!');
+        }
     }
 
     public function render()
     {
-        $questions = Question::with('options')->where('exam_id', $this->exam->id)->latest()->get();
+        $questions = BankQuestion::with('options')->where('question_bank_id', $this->bank->id)->latest()->get();
 
-        return view('livewire.manage-questions', compact('questions'));
+        return view('livewire.question-bank-show', compact('questions'));
     }
 }

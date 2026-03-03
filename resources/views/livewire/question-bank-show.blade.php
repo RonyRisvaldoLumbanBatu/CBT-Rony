@@ -2,7 +2,7 @@
 
     <div class="mb-8 flex items-center justify-between">
         <div class="flex items-center gap-4">
-            <a href="{{ route('dashboard') }}"
+            <a href="/guru/bank-soal" wire:navigate
                 class="p-2 bg-white dark:bg-gray-800 text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 transition">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                     stroke="currentColor" class="w-6 h-6">
@@ -11,31 +11,20 @@
                 </svg>
             </a>
             <div>
-                <h2 class="text-2xl font-extrabold text-gray-800 dark:text-white">Kelola Soal</h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Ujian: <span
-                        class="font-bold text-indigo-600 dark:text-indigo-400">{{ $exam->title }}</span></p>
+                <h2 class="text-2xl font-extrabold text-gray-800 dark:text-white">Kelola Bank Soal</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Kategori: <span
+                        class="font-bold text-indigo-600 dark:text-indigo-400">{{ $bank->title }}</span></p>
             </div>
         </div>
 
-        <div class="flex items-center gap-3">
-            <button wire:click="openBankModal"
-                class="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 text-gray-700 dark:text-gray-200 font-bold py-2.5 px-5 rounded-xl shadow-sm transition">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                    stroke="currentColor" class="w-5 h-5 text-indigo-500">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
-                </svg>
-                Ambil dari Bank
-            </button>
-            <button wire:click="openModal"
-                class="flex items-center gap-2 bg-indigo-600 dark:bg-indigo-500 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white font-bold py-2.5 px-5 rounded-xl shadow-sm transition">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                    stroke="currentColor" class="w-5 h-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-                Tambah Manual
-            </button>
-        </div>
+        <button wire:click="openModal"
+            class="flex items-center gap-2 bg-indigo-600 dark:bg-indigo-500 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white font-bold py-2.5 px-5 rounded-xl shadow-sm transition">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            Tambah Soal Baru
+        </button>
     </div>
 
     @if(session('sukses'))
@@ -50,74 +39,9 @@
         </div>
     @endif
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-        <div class="lg:col-span-1 space-y-4">
-            <div
-                class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 h-fit sticky top-10 transition-colors duration-300">
-                <div class="flex items-center gap-2 mb-4 border-b border-gray-100 dark:border-gray-700 pb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-6 h-6 text-emerald-500 dark:text-emerald-400">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                    </svg>
-                    <h3 class="text-lg font-bold text-gray-800 dark:text-white">Import dari Excel</h3>
-                </div>
-
-                <button wire:click="downloadTemplate"
-                    class="w-full flex justify-center items-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-bold py-2.5 px-4 rounded-xl shadow-sm transition mb-4 text-sm border border-gray-200 dark:border-gray-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                        stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                    </svg>
-                    Download Template (.xlsx)
-                </button>
-
-                <form wire:submit.prevent="importExcel">
-                    <div class="mb-4 flex flex-col items-center justify-center w-full">
-                        <label for="dropzone-file"
-                            class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                <svg class="w-8 h-8 mb-2 text-gray-400 dark:text-gray-500" fill="none"
-                                    stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
-                                    </path>
-                                </svg>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 font-semibold">Pilih file Excel/CSV
-                                </p>
-                            </div>
-                            <input wire:model="file" id="dropzone-file" type="file" class="hidden"
-                                accept=".xlsx, .xls, .csv" />
-                        </label>
-                    </div>
-
-                    @if ($file)
-                        <div
-                            class="mb-4 text-sm text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/30 p-2 rounded-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-                                <path fill-rule="evenodd"
-                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                            File: {{ $file->getClientOriginalName() }}
-                        </div>
-                    @endif
-                    @error('file') <span class="text-red-500 dark:text-red-400 text-xs mb-4 block">{{ $message }}</span>
-                    @enderror
-
-                    <button type="submit" wire:loading.attr="disabled"
-                        class="w-full flex justify-center items-center gap-2 bg-emerald-600 dark:bg-emerald-500 hover:bg-emerald-700 dark:hover:bg-emerald-600 disabled:bg-gray-400 dark:disabled:bg-gray-600 text-white font-bold py-3 px-4 rounded-xl shadow-sm transition">
-                        <span wire:loading.remove wire:target="importExcel">Mulai Import</span>
-                        <span wire:loading wire:target="importExcel" class="animate-pulse">Menyihir Data...</span>
-                    </button>
-                </form>
-            </div>
-        </div>
-
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
         <div class="lg:col-span-2 space-y-4">
-            <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2">Daftar Soal Saat Ini
+            <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2">Daftar Soal di Bank Ini
                 ({{ $questions->count() }})</h3>
 
             @forelse($questions as $index => $q)
@@ -135,7 +59,8 @@
                                     d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                             </svg>
                         </button>
-                        <button wire:click="deleteQuestion({{ $q->id }})" wire:confirm="Hapus soal ini?"
+                        <button wire:click="deleteQuestion({{ $q->id }})"
+                            wire:confirm="Hapus soal ini secara permanen dari bank soal?"
                             class="text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/40 p-1.5 rounded-lg transition"
                             title="Hapus Soal">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
@@ -186,7 +111,8 @@
             @empty
                 <div
                     class="p-10 text-center flex flex-col items-center border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50/50 dark:bg-gray-800/50">
-                    <p class="text-gray-500 dark:text-gray-400 font-medium">Ujian ini belum memiliki soal.</p>
+                    <p class="text-gray-500 dark:text-gray-400 font-medium">Bank Soal ini masih kosong. Silakan tambah soal
+                        baru.</p>
                 </div>
             @endforelse
         </div>
@@ -202,7 +128,7 @@
 
                     <div class="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-700">
                         <h3 class="text-xl font-bold text-gray-800 dark:text-white">
-                            {{ $isEditMode ? 'Edit Soal' : 'Tambah Soal Manual' }}
+                            {{ $isEditMode ? 'Edit Soal' : 'Tambah Soal Baru' }}
                         </h3>
                         <button wire:click="closeModal"
                             class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-white rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center transition">
@@ -424,49 +350,6 @@
                         </div>
                     </form>
 
-                </div>
-            </div>
-        </div>
-    @endif
-
-    @if($isBankModalOpen)
-        <div class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-gray-900 bg-opacity-50 dark:bg-opacity-80 backdrop-blur-sm transition-opacity">
-            <div class="relative w-full max-w-lg p-4">
-                <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700">
-                    <div class="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-700">
-                        <h3 class="text-xl font-bold text-gray-800 dark:text-white">
-                            Ambil dari Bank Soal
-                        </h3>
-                        <button wire:click="closeBankModal" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-white rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center transition">
-                            <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                            </svg>
-                        </button>
-                    </div>
-
-                    <form wire:submit.prevent="importFromBank" class="p-6 space-y-5">
-                        <div class="mb-5">
-                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Pilih Bank Soal Tersedia</label>
-                            @if(count($availableBanks) > 0)
-                                <select wire:model="selectedBankId" class="w-full rounded-xl border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition">
-                                    <option value="">-- Pilih Bank --</option>
-                                    @foreach($availableBanks as $b)
-                                        <option value="{{ $b->id }}">{{ $b->title }} ({{ $b->questions_count }} Soal)</option>
-                                    @endforeach
-                                </select>
-                                @error('selectedBankId') <span class="text-red-500 dark:text-red-400 text-xs mt-1">{{ $message }}</span> @enderror
-                            @else
-                                <div class="bg-amber-50 dark:bg-amber-900/30 text-amber-600 border-l-4 border-amber-500 p-3 rounded text-sm font-medium">Anda belum membuat satupun Bank Soal.</div>
-                            @endif
-                        </div>
-
-                        <div class="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
-                            <button type="button" wire:click="closeBankModal" class="px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 transition">Batal</button>
-                            <button type="submit" @if(count($availableBanks) === 0) disabled @endif class="px-5 py-2.5 text-sm font-bold text-white bg-indigo-600 dark:bg-indigo-500 rounded-xl hover:bg-indigo-700 dark:hover:bg-indigo-600 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                                Copas Soal Sekarang
-                            </button>
-                        </div>
-                    </form>
                 </div>
             </div>
         </div>
