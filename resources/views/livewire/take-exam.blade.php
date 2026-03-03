@@ -154,24 +154,24 @@
 
             <div class="flex items-center gap-3 bg-indigo-50 dark:bg-gray-700 border border-indigo-100 dark:border-gray-600 px-5 py-2.5 rounded-xl transition-colors duration-300"
                 x-data="{ 
-                                                    timeLeft: @entangle('timeLeft'),
-                                                    init() {
-                                                        setInterval(() => {
-                                                            if (this.timeLeft > 0) {
-                                                                this.timeLeft--;
-                                                            } else if (this.timeLeft === 0) {
-                                                                $wire.submitExam(); // Kumpulkan skor otomatis saat waktu habis
-                                                                this.timeLeft = -1; // Hindari pengulangan trigger
-                                                            }
-                                                        }, 1000);
-                                                    },
-                                                    formatTime(seconds) {
-                                                        if (seconds <= 0) return '0:00';
-                                                        let m = Math.floor(seconds / 60);
-                                                        let s = seconds % 60;
-                                                        return m + ':' + s.toString().padStart(2, '0');
-                                                    }
-                                                 }">
+                                                        timeLeft: @entangle('timeLeft'),
+                                                        init() {
+                                                            setInterval(() => {
+                                                                if (this.timeLeft > 0) {
+                                                                    this.timeLeft--;
+                                                                } else if (this.timeLeft === 0) {
+                                                                    $wire.submitExam(); // Kumpulkan skor otomatis saat waktu habis
+                                                                    this.timeLeft = -1; // Hindari pengulangan trigger
+                                                                }
+                                                            }, 1000);
+                                                        },
+                                                        formatTime(seconds) {
+                                                            if (seconds <= 0) return '0:00';
+                                                            let m = Math.floor(seconds / 60);
+                                                            let s = seconds % 60;
+                                                            return m + ':' + s.toString().padStart(2, '0');
+                                                        }
+                                                     }">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                     stroke="currentColor" class="w-6 h-6 text-indigo-600 dark:text-indigo-400 animate-pulse">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -194,13 +194,50 @@
                 @endphp
 
                 <div wire:key="soal-area-{{ $currentQuestion['id'] }}">
+                    @php
+                        $tipeSoal = $currentQuestion['type'];
+                        $tipeLabel = '';
+                        $tipeBg = '';
+                        $petunjuk = '';
+
+                        if ($tipeSoal === 'pg') {
+                            $tipeLabel = 'Pilihan Ganda';
+                            $tipeBg = 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300';
+                            $petunjuk = 'Pilih satu jawaban yang paling tepat.';
+                        } elseif ($tipeSoal === 'pg_kompleks') {
+                            $tipeLabel = 'Pilihan Ganda Kompleks';
+                            $tipeBg = 'bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-300';
+                            $petunjuk = 'Pilih satu atau lebih jawaban yang menurut Anda benar.';
+                        } elseif ($tipeSoal === 'benar_salah') {
+                            $tipeLabel = 'Benar / Salah';
+                            $tipeBg = 'bg-orange-100 dark:bg-orange-900/50 text-orange-800 dark:text-orange-300';
+                            $petunjuk = 'Pilih opsi yang sesuai antara Benar atau Salah.';
+                        } elseif ($tipeSoal === 'isian') {
+                            $tipeLabel = 'Isian Singkat';
+                            $tipeBg = 'bg-teal-100 dark:bg-teal-900/50 text-teal-800 dark:text-teal-300';
+                            $petunjuk = 'Ketik jawaban singkat pada kolom yang tersedia.';
+                        } elseif ($tipeSoal === 'essay') {
+                            $tipeLabel = 'Uraian / Essay';
+                            $tipeBg = 'bg-rose-100 dark:bg-rose-900/50 text-rose-800 dark:text-rose-300';
+                            $petunjuk = 'Uraikan jawaban Anda secara tertulis dan lengkap.';
+                        }
+                    @endphp
+
                     <div
-                        class="mb-8 border-b border-gray-100 dark:border-gray-700 pb-6 transition-colors duration-300 flex justify-between items-start">
+                        class="mb-6 border-b border-gray-100 dark:border-gray-700 pb-5 transition-colors duration-300 flex justify-between items-start">
                         <div>
-                            <span
-                                class="inline-block bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-300 text-xs font-bold px-3 py-1.5 rounded-full mb-4">
-                                SOAL NOMOR {{ $currentQuestionIndex + 1 }}
-                            </span>
+                            <div class="flex flex-wrap items-center gap-2 mb-2">
+                                <span
+                                    class="inline-block bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-300 text-xs font-bold px-3 py-1.5 rounded-full">
+                                    SOAL NOMOR {{ $currentQuestionIndex + 1 }}
+                                </span>
+                                <span class="inline-block {{ $tipeBg }} text-xs font-bold px-3 py-1.5 rounded-full">
+                                    {{ $tipeLabel }}
+                                </span>
+                            </div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 font-medium italic mt-1">
+                                *Petunjuk: {{ $petunjuk }}
+                            </p>
                         </div>
                         <div
                             class="flex items-center gap-2 bg-gray-50 dark:bg-gray-700/50 p-1.5 rounded-lg border border-gray-200 dark:border-gray-600">
@@ -358,9 +395,9 @@
                             @endphp
 
                             <button wire:click="jumpToQuestion({{ $index }})" class="w-full aspect-square rounded-lg flex items-center justify-center text-sm font-bold transition-all duration-200
-                                                                                                            {{ $isActive ? 'ring-2 ring-offset-2 dark:ring-offset-gray-800 ring-indigo-500 transform scale-105' : '' }}
-                                                                                                            {{ $bgClass }}
-                                                                                                            ">
+                                                                                                                    {{ $isActive ? 'ring-2 ring-offset-2 dark:ring-offset-gray-800 ring-indigo-500 transform scale-105' : '' }}
+                                                                                                                    {{ $bgClass }}
+                                                                                                                    ">
                                 {{ $index + 1 }}
                             </button>
                         @endforeach
