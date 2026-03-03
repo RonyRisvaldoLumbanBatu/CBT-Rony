@@ -129,7 +129,12 @@ class TakeExam extends Component
     {
         // Sesuaikan validasi jumlah soal dengan array baru
         if ($this->currentQuestionIndex < count($this->questionsData) - 1) {
+
+            // Auto-save: penting dipanggil setiap ganti halaman soal
+            $this->updatedAnswers();
+
             $this->currentQuestionIndex++;
+            session()->put('ujian_index_' . $this->exam->id, $this->currentQuestionIndex);
 
             event(new \App\Events\StudentExamUpdate(
                 $this->exam->id,
@@ -142,7 +147,12 @@ class TakeExam extends Component
     public function prevQuestion()
     {
         if ($this->currentQuestionIndex > 0) {
+
+            // Auto-save: penting dipanggil setiap ganti halaman soal
+            $this->updatedAnswers();
+
             $this->currentQuestionIndex--;
+            session()->put('ujian_index_' . $this->exam->id, $this->currentQuestionIndex);
         }
     }
 
