@@ -62,41 +62,59 @@ class TakeExam extends Component
             $this->isPinVerified = session()->get('pin_verified_' . $id, false);
         }
 
-        // 3. MESIN PENGURUTAN TIPE & PENGACAK SOAL (ANTI-NYONTEK)
-        $acakSoal = [];
+        // 3. MESIN PENGURUTAN TIPE & PENGACAK SOAL (ANTI-NYONTEK) & SESSION RESTORE
+        $sessionKeyQuestions = 'ujian_questions_' . $this->exam->id;
+        $sessionKeyAnswers = 'ujian_answers_' . $this->exam->id;
+        $sessionKeyDoubtful = 'ujian_doubtful_' . $this->exam->id;
+        $sessionKeyIndex = 'ujian_index_' . $this->exam->id;
 
-        // Urutan tipe soal yang diinginkan: PG -> PG Kompleks -> Benar/Salah -> Isian -> Essay
-        $typeOrder = ['pg' => 1, 'pg_kompleks' => 2, 'benar_salah' => 3, 'isian' => 4, 'essay' => 5];
+        if (session()->has($sessionKeyQuestions)) {
+            // Restore jika siswa ter-refresh/mati lampu
+            $this->questionsData = session()->get($sessionKeyQuestions);
+            $this->answers = session()->get($sessionKeyAnswers, []);
+            $this->doubtfulQuestions = session()->get($sessionKeyDoubtful, []);
+            $this->currentQuestionIndex = session()->get($sessionKeyIndex, 0);
+        } else {
+            $acakSoal = [];
 
-        // Acak semua soal dulu, lalu di-sort berdasarkan tipe
-        // Ini memastikan soal setiap murid tetap acak isinya, TAPI urutan tipenya terstruktur
-        $sortedQuestions = $this->exam->questions->shuffle()->sortBy(function ($q) use ($typeOrder) {
-            return $typeOrder[$q->type] ?? 99;
-        });
+            // Urutan tipe soal yang diinginkan: PG -> PG Kompleks -> Benar/Salah -> Isian -> Essay
+            $typeOrder = ['pg' => 1, 'pg_kompleks' => 2, 'benar_salah' => 3, 'isian' => 4, 'essay' => 5];
 
-        foreach ($sortedQuestions as $soal) {
-            $options = [];
-            if (in_array($soal->type, ['pg', 'pg_kompleks'])) {
-                $options = $soal->options->shuffle()->toArray();
-            } elseif ($soal->type === 'benar_salah') {
-                $options = $soal->options->toArray();
+            // Acak semua soal dulu, lalu di-sort berdasarkan tipe
+            $sortedQuestions = $this->exam->questions->shuffle()->sortBy(function ($q) use ($typeOrder) {
+                return $typeOrder[$q->type] ?? 99;
+            });
+
+            foreach ($sortedQuestions as $soal) {
+                $options = [];
+                if (in_array($soal->type, ['pg', 'pg_kompleks'])) {
+                    $options = $soal->options->shuffle()->toArray();
+                } elseif ($soal->type === 'benar_salah') {
+                    $options = $soal->options->toArray();
+                }
+
+                $acakSoal[] = [
+                    'id' => $soal->id,
+                    'question_text' => $soal->question_text,
+                    'type' => $soal->type,
+                    'image_path' => $soal->image_path,
+                    'youtube_url' => $soal->youtube_url,
+                    'options' => $options,
+                ];
+
+                // Cegah bug Livewire: Checkbox butuh inisialisasi awal Array kosong []
+                if ($soal->type === 'pg_kompleks') {
+                    $this->answers[$soal->id] = [];
+                }
             }
+            $this->questionsData = $acakSoal;
 
-            $acakSoal[] = [
-                'id' => $soal->id,
-                'question_text' => $soal->question_text,
-                'type' => $soal->type,
-                'image_path' => $soal->image_path,
-                'youtube_url' => $soal->youtube_url,
-                'options' => $options,
-            ];
-
-            // Cegah bug Livewire: Checkbox butuh inisialisasi awal Array kosong []
-            if ($soal->type === 'pg_kompleks') {
-                $this->answers[$soal->id] = [];
-            }
+            // Simpan state awal ke session untuk ketahanan (Disaster Recovery)
+            session()->put($sessionKeyQuestions, $this->questionsData);
+            session()->put($sessionKeyAnswers, $this->answers);
+            session()->put($sessionKeyDoubtful, $this->doubtfulQuestions);
+            session()->put($sessionKeyIndex, $this->currentQuestionIndex);
         }
-        $this->questionsData = $acakSoal;
 
         // 4. TIMER ANTI-CHEAT MENGGUNAKAN SESSION
         $kunciSession = 'ujian_selesai_' . $this->exam->id;
