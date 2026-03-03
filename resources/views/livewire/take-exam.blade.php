@@ -61,28 +61,74 @@
         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/90 backdrop-blur-sm transition-opacity">
         <div @click.away="showSubmitConfirm = false"
             class="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-gray-100 dark:border-gray-700 text-center transform transition-all duration-300 scale-100">
-            <div
-                class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 mb-5 ring-4 ring-emerald-50 dark:ring-emerald-900/10">
-                <svg class="h-8 w-8 text-emerald-600 dark:text-emerald-500" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </div>
-            <h3 class="text-2xl font-black text-gray-900 dark:text-white mb-2">Kumpulkan Ujian?</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-6 leading-relaxed">
-                Pastikan sumua jawabanmu sudah <strong>terisi dan benar</strong>. Setelah dikumpulkan, ujian akan
-                langsung berakhir.
-            </p>
+
+            @php
+                $unansweredCount = 0;
+                $doubtfulCount = count($doubtfulQuestions);
+                if (!empty($questionsData)) {
+                    foreach ($questionsData as $q) {
+                        $isAns = isset($answers[$q['id']]) && $answers[$q['id']] !== '' && $answers[$q['id']] !== [];
+                        if (!$isAns) {
+                            $unansweredCount++;
+                        }
+                    }
+                }
+            @endphp
+
+            @if($unansweredCount > 0 || $doubtfulCount > 0)
+                <div
+                    class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/30 mb-5 ring-4 ring-red-50 dark:ring-red-900/10 animate-pulse">
+                    <svg class="h-8 w-8 text-red-600 dark:text-red-500" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-black text-gray-900 dark:text-white mb-2">Tunggu Dulu!</h3>
+                <div
+                    class="text-sm text-gray-600 dark:text-gray-300 font-medium mb-6 leading-relaxed bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-100 dark:border-red-800/30">
+                    Sistem mendeteksi:
+                    <ul class="mt-2 space-y-1 text-left inline-block">
+                        @if($unansweredCount > 0)
+                            <li class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-red-500 shadow-sm"></div> <strong>{{ $unansweredCount }}
+                                    soal</strong> belum ada jawaban.
+                            </li>
+                        @endif
+                        @if($doubtfulCount > 0)
+                            <li class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-yellow-500 shadow-sm"></div> <strong>{{ $doubtfulCount }}
+                                    soal</strong> asih ditandai ragu.
+                            </li>
+                        @endif
+                    </ul>
+                    <p class="mt-3 text-xs text-red-600 dark:text-red-400 font-bold uppercase">Yakin ingin mengakhiri ujian
+                        dan pasrah dengan nilai yang ada?</p>
+                </div>
+            @else
+                <div
+                    class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 mb-5 ring-4 ring-emerald-50 dark:ring-emerald-900/10">
+                    <svg class="h-8 w-8 text-emerald-600 dark:text-emerald-500" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-black text-gray-900 dark:text-white mb-2">Semua Aman!</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-6 leading-relaxed">
+                    Mantap! Seluruh pertanyaan telah terjawab dengan yakin. Apakah Anda siap mengumpulkannya sekarang?
+                </p>
+            @endif
+
             <div class="flex flex-col gap-3">
                 <button wire:click="submitExam" @click="showSubmitConfirm = false"
-                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base py-3.5 px-4 rounded-xl transition-all shadow-lg shadow-emerald-500/30 active:scale-95 flex items-center justify-center gap-2">
+                    class="w-full {{ ($unansweredCount > 0 || $doubtfulCount > 0) ? 'bg-red-600 hover:bg-red-700 shadow-red-500/30' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/30' }} text-white font-bold text-base py-3.5 px-4 rounded-xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                         stroke="currentColor" class="w-5 h-5">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
                     </svg>
-                    Ya, Kumpulkan Sekarang
+                    Ya, Kumpulkan Ujian
                 </button>
                 <button @click="showSubmitConfirm = false"
                     class="w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-bold text-base py-3.5 px-4 rounded-xl transition-all active:scale-95">
@@ -152,34 +198,40 @@
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Kerjakan dengan jujur dan teliti.</p>
             </div>
 
-            <div class="flex items-center gap-3 bg-indigo-50 dark:bg-gray-700 border border-indigo-100 dark:border-gray-600 px-5 py-2.5 rounded-xl transition-colors duration-300"
-                x-data="{ 
-                                                        timeLeft: @entangle('timeLeft'),
-                                                        init() {
-                                                            setInterval(() => {
-                                                                if (this.timeLeft > 0) {
-                                                                    this.timeLeft--;
-                                                                } else if (this.timeLeft === 0) {
-                                                                    $wire.submitExam(); // Kumpulkan skor otomatis saat waktu habis
-                                                                    this.timeLeft = -1; // Hindari pengulangan trigger
-                                                                }
-                                                            }, 1000);
-                                                        },
-                                                        formatTime(seconds) {
-                                                            if (seconds <= 0) return '0:00';
-                                                            let m = Math.floor(seconds / 60);
-                                                            let s = seconds % 60;
-                                                            return m + ':' + s.toString().padStart(2, '0');
-                                                        }
-                                                     }">
+            <div :class="timeLeft <= 300 ? 'bg-red-50 dark:bg-red-900/40 border-red-200 dark:border-red-800/50 animate-pulse ring-2 ring-red-500 dark:ring-red-500/50' : 'bg-indigo-50 dark:bg-gray-700 border-indigo-100 dark:border-gray-600'"
+                class="flex items-center gap-3 px-5 py-2.5 rounded-xl transition-all duration-300" x-data="{ 
+                                                            timeLeft: @entangle('timeLeft'),
+                                                            init() {
+                                                                setInterval(() => {
+                                                                    if (this.timeLeft > 0) {
+                                                                        this.timeLeft--;
+                                                                    } else if (this.timeLeft === 0) {
+                                                                        $wire.submitExam(); // Kumpulkan skor otomatis saat waktu habis
+                                                                        this.timeLeft = -1; // Hindari pengulangan trigger
+                                                                    }
+                                                                }, 1000);
+                                                            },
+                                                            formatTime(seconds) {
+                                                                if (seconds <= 0) return '0:00';
+                                                                let m = Math.floor(seconds / 60);
+                                                                let s = seconds % 60;
+                                                                return m + ':' + s.toString().padStart(2, '0');
+                                                            }
+                                                         }">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                    stroke="currentColor" class="w-6 h-6 text-indigo-600 dark:text-indigo-400 animate-pulse">
+                    stroke="currentColor" class="w-6 h-6 animate-pulse"
+                    :class="timeLeft <= 300 ? 'text-red-600 dark:text-red-400' : 'text-indigo-600 dark:text-indigo-400'">
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
-                <div :class="timeLeft < 300 ? 'text-red-600 dark:text-red-400' : 'text-indigo-700 dark:text-indigo-300'"
-                    class="text-xl font-bold font-mono tracking-wider" x-text="formatTime(timeLeft)">
-                    {{ floor($timeLeft / 60) }}:{{ str_pad($timeLeft % 60, 2, '0', STR_PAD_LEFT) }}
+                <div class="flex flex-col">
+                    <span x-show="timeLeft <= 300"
+                        class="text-[10px] uppercase font-black tracking-wider text-red-600 dark:text-red-400 mb-[-4px]"
+                        style="display: none;">Waktu Kritis</span>
+                    <div :class="timeLeft <= 300 ? 'text-red-700 dark:text-red-300' : 'text-indigo-700 dark:text-indigo-300'"
+                        class="text-xl font-bold font-mono tracking-wider" x-text="formatTime(timeLeft)">
+                        {{ floor($timeLeft / 60) }}:{{ str_pad($timeLeft % 60, 2, '0', STR_PAD_LEFT) }}
+                    </div>
                 </div>
             </div>
         </div>
@@ -395,9 +447,9 @@
                             @endphp
 
                             <button wire:click="jumpToQuestion({{ $index }})" class="w-full aspect-square rounded-lg flex items-center justify-center text-sm font-bold transition-all duration-200
-                                                                                                                    {{ $isActive ? 'ring-2 ring-offset-2 dark:ring-offset-gray-800 ring-indigo-500 transform scale-105' : '' }}
-                                                                                                                    {{ $bgClass }}
-                                                                                                                    ">
+                                                                                                                            {{ $isActive ? 'ring-2 ring-offset-2 dark:ring-offset-gray-800 ring-indigo-500 transform scale-105' : '' }}
+                                                                                                                            {{ $bgClass }}
+                                                                                                                            ">
                                 {{ $index + 1 }}
                             </button>
                         @endforeach
