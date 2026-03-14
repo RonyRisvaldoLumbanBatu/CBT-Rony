@@ -1,487 +1,281 @@
-<div class="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8 select-none" x-data="{ 
+<div class="max-w-7xl mx-auto py-6 sm:py-8 px-4 sm:px-6 lg:px-8 select-none" 
+     x-data="{ 
          warnings: 0, 
          maxWarnings: 3,
          showWarning: false,
          showSubmitConfirm: false,
+         isFullscreen: @entangle('isFullscreen'),
+         fontSize: 18,
+
+         toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().then(() => {
+                    this.isFullscreen = true;
+                }).catch(err => {
+                    alert(`Gagal masuk mode layar penuh: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                    this.isFullscreen = false;
+                }
+            }
+         },
+
          init() {
-            // Anti Klik Kanan
             document.addEventListener('contextmenu', event => event.preventDefault());
-            // Anti Copy Text
             document.addEventListener('copy', event => {
                 event.preventDefault();
                 alert('Tindakan menyalin tidak diizinkan!');
             });
-            // Pelacak Tab Focus
             document.addEventListener('visibilitychange', () => {
-                if (document.hidden) {
-                    this.warnings++;
-                    this.showWarning = true;
-                    if (this.warnings >= this.maxWarnings) {
-                        $wire.submitExam(); // Auto submit pada pelanggaran ke-3
-                    } else {
-                        $wire.logCheatStrike(this.warnings);
-                    }
+                if (document.hidden) this.triggerWarning('KELUAR DARI HALAMAN UJIAN');
+            });
+            document.addEventListener('fullscreenchange', () => {
+                if (!document.fullscreenElement && this.isFullscreen) {
+                    this.isFullscreen = false;
+                    this.triggerWarning('KELUAR DARI MODE LAYAR PENUH');
                 }
             });
+         },
+
+         triggerWarning(reason) {
+            if (this.showWarning) return;
+            this.warnings++;
+            this.showWarning = true;
+            if (this.warnings >= this.maxWarnings) {
+                if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
+                $wire.submitExam();
+            } else {
+                $wire.logCheatStrike(this.warnings);
+            }
          }
      }">
 
-    <!-- Modal Peringatan Kecurangan (Anti-Cheat) -->
-    <div x-show="showWarning" style="display: none;"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/90 backdrop-blur-md">
-        <div
-            class="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-lg w-full shadow-2xl border-4 border-red-500 text-center animate-bounce">
-            <div
-                class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-red-100 dark:bg-red-900/30 mb-6 focus:ring-4 ring-red-500">
-                <svg class="h-12 w-12 text-red-600 dark:text-red-500" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+    {{-- MODAL AREA --}}
+    <!-- Peringatan Cheat -->
+    <div x-show="showWarning" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/90 backdrop-blur-sm" style="display: none;" x-cloak>
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md w-full shadow-2xl border-2 border-red-500 text-center animate-bounce">
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+                <svg class="h-10 w-10 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
             </div>
-            <h3
-                class="text-3xl font-black text-gray-900 dark:text-white mb-3 uppercase tracking-wider text-red-600 dark:text-red-500">
-                Peringatan Keras!</h3>
-            <p class="text-lg text-gray-600 dark:text-gray-300 font-medium mb-8 leading-relaxed">
-                Sistem Radar mendeteksi Anda baru saja <span class="font-bold underline text-red-500">KELUAR DARI
-                    HALAMAN UJIAN</span>! <br><br>
-                Ini adalah pelanggaran <strong class="text-red-600 text-2xl ml-1" x-text='warnings'></strong> dari batas
-                <strong x-text='maxWarnings' class="text-xl"></strong> maksimal. <br>
-                Jika melebihi batas, ujian Anda akan <strong class="text-red-500">disubmit secara otomatis!</strong>
+            <h3 class="text-2xl font-black text-red-600 mb-2 uppercase">Peringatan Keras!</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-6">
+                Anda terdeteksi keluar dari layar ujian! Pelanggaran: <strong class="text-xl" x-text="warnings"></strong>/<span x-text="maxWarnings"></span>.
             </p>
-            <button @click="showWarning = false"
-                class="w-full bg-red-600 hover:bg-red-700 active:scale-95 text-white font-black text-lg py-4 px-6 rounded-xl transition-all duration-300 shadow-xl shadow-red-500/30 uppercase tracking-widest">
-                SAYA BERJANJI TIDAK MENGULANGI
-            </button>
+            <button @click="showWarning = false" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl uppercase">Saya Mengerti</button>
         </div>
     </div>
 
-    <!-- Modal Konfirmasi Kumpul Ujian (Submit) -->
-    <div x-show="showSubmitConfirm" style="display: none;"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/90 backdrop-blur-sm transition-opacity">
-        <div @click.away="showSubmitConfirm = false"
-            class="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-gray-100 dark:border-gray-700 text-center transform transition-all duration-300 scale-100">
-
-            @php
-                $unansweredCount = 0;
-                $doubtfulCount = count($doubtfulQuestions);
-                if (!empty($questionsData)) {
-                    foreach ($questionsData as $q) {
-                        $isAns = isset($answers[$q['id']]) && $answers[$q['id']] !== '' && $answers[$q['id']] !== [];
-                        if (!$isAns) {
-                            $unansweredCount++;
-                        }
-                    }
-                }
-            @endphp
-
-            @if($unansweredCount > 0 || $doubtfulCount > 0)
-                <div
-                    class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/30 mb-5 ring-4 ring-red-50 dark:ring-red-900/10 animate-pulse">
-                    <svg class="h-8 w-8 text-red-600 dark:text-red-500" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                </div>
-                <h3 class="text-2xl font-black text-gray-900 dark:text-white mb-2">Tunggu Dulu!</h3>
-                <div
-                    class="text-sm text-gray-600 dark:text-gray-300 font-medium mb-6 leading-relaxed bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-100 dark:border-red-800/30">
-                    Sistem mendeteksi:
-                    <ul class="mt-2 space-y-1 text-left inline-block">
-                        @if($unansweredCount > 0)
-                            <li class="flex items-center gap-2">
-                                <div class="w-2 h-2 rounded-full bg-red-500 shadow-sm"></div> <strong>{{ $unansweredCount }}
-                                    soal</strong> belum ada jawaban.
-                            </li>
-                        @endif
-                        @if($doubtfulCount > 0)
-                            <li class="flex items-center gap-2">
-                                <div class="w-2 h-2 rounded-full bg-yellow-500 shadow-sm"></div> <strong>{{ $doubtfulCount }}
-                                    soal</strong> asih ditandai ragu.
-                            </li>
-                        @endif
-                    </ul>
-                    <p class="mt-3 text-xs text-red-600 dark:text-red-400 font-bold uppercase">Yakin ingin mengakhiri ujian
-                        dan pasrah dengan nilai yang ada?</p>
-                </div>
-            @else
-                <div
-                    class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 mb-5 ring-4 ring-emerald-50 dark:ring-emerald-900/10">
-                    <svg class="h-8 w-8 text-emerald-600 dark:text-emerald-500" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <h3 class="text-2xl font-black text-gray-900 dark:text-white mb-2">Semua Aman!</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-6 leading-relaxed">
-                    Mantap! Seluruh pertanyaan telah terjawab dengan yakin. Apakah Anda siap mengumpulkannya sekarang?
-                </p>
-            @endif
-
+    <!-- Konfirmasi Kumpul -->
+    <div x-show="showSubmitConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/90 backdrop-blur-sm" style="display: none;" x-cloak>
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center" @click.away="showSubmitConfirm = false">
+            <h3 class="text-2xl font-black text-gray-900 dark:text-white mb-2">Selesai Ujian?</h3>
+            <p class="text-gray-500 mb-6 text-sm">Pastikan semua jawaban sudah terisi dengan benar. Tindakan ini tidak bisa dibatalkan.</p>
             <div class="flex flex-col gap-3">
-                <button wire:click="submitExam" @click="showSubmitConfirm = false"
-                    class="w-full {{ ($unansweredCount > 0 || $doubtfulCount > 0) ? 'bg-red-600 hover:bg-red-700 shadow-red-500/30' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/30' }} text-white font-bold text-base py-3.5 px-4 rounded-xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                        stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
-                    </svg>
-                    Ya, Kumpulkan Ujian
-                </button>
-                <button @click="showSubmitConfirm = false"
-                    class="w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-bold text-base py-3.5 px-4 rounded-xl transition-all active:scale-95">
-                    Batal, Ingin Cek Lagi
-                </button>
+                <button wire:click="submitExam" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl uppercase">Ya, Kumpulkan</button>
+                <button @click="showSubmitConfirm = false" class="w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-bold py-3 rounded-xl">Batal</button>
             </div>
         </div>
     </div>
 
-
     @if(!$isPinVerified)
-        <div class="min-h-[70vh] flex flex-col items-center justify-center p-4">
-            <div
-                class="bg-white dark:bg-gray-800 p-8 md:p-10 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-700 w-full max-w-md text-center transition-all duration-300 transform scale-100">
-                <div
-                    class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-indigo-100 dark:bg-indigo-900/30 mb-6 focus:ring-4 ring-indigo-500">
-                    <svg class="h-10 w-10 text-indigo-600 dark:text-indigo-400" xmlns="http://www.w3.org/2000/svg"
-                        fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+        {{-- LAYAR 1: INPUT PIN --}}
+        <div class="flex flex-col items-center justify-center min-h-[60vh]">
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 w-full max-w-md text-center">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-indigo-100 dark:bg-indigo-900/30 mb-6">
+                    <svg class="h-8 w-8 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                 </div>
-
-                <h2 class="text-3xl font-black text-gray-900 dark:text-white mb-2 tracking-tight">Ruang Ujian Terkunci</h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">Masukkan 6-Digit PIN Akses yang
-                    diberikan oleh dosen atau pengawas untuk memulai <strong>{{ $exam->title }}</strong>.</p>
-
+                <h2 class="text-2xl font-black text-gray-900 dark:text-white mb-2">Ruang Ujian Terkunci</h2>
+                <p class="text-gray-500 dark:text-gray-400 mb-6 text-sm">Masukkan 6-Digit PIN Akses untuk memulai.</p>
                 <form wire:submit.prevent="verifyPin" class="space-y-6">
                     <div>
-                        <input type="text" wire:model="inputPin"
-                            class="w-full text-center text-3xl font-black tracking-[0.2em] rounded-2xl border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-indigo-400 shadow-inner px-6 py-4 uppercase focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 transition placeholder:text-gray-300 dark:placeholder:text-gray-700 placeholder:font-medium placeholder:tracking-normal"
-                            placeholder="PIN" maxlength="6" required autofocus autocomplete="off">
-
-                        @if (session()->has('pin_error'))
-                            <p class="text-red-500 text-sm font-bold mt-3 animate-pulse flex items-center justify-center gap-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                                    stroke="currentColor" class="w-4 h-4">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                </svg>
-                                {{ session('pin_error') }}
-                            </p>
+                        <input type="text" wire:model.defer="inputPin" class="w-full text-center text-3xl font-black tracking-[0.3em] bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl py-4 uppercase focus:border-indigo-500 focus:ring-0" maxlength="6" required autofocus autocomplete="off">
+                        @if(session()->has('pin_error')) 
+                            <p class="text-red-500 font-bold text-sm mt-2">{{ session('pin_error') }}</p> 
                         @endif
                     </div>
-
-                    <button type="submit"
-                        class="w-full flex justify-center items-center gap-2 py-4 px-4 border border-transparent rounded-2xl text-lg font-black text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 shadow-xl shadow-indigo-500/30 transition-all duration-300 cursor-pointer">
-                        Validasi & Mulai Ujian
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
-                            stroke="currentColor" class="w-5 h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
-                        </svg>
-                    </button>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg py-4 rounded-xl shadow-md transition-colors">Validasi PIN</button>
                 </form>
-
-                <div class="mt-8 text-sm text-gray-400 dark:text-gray-500 font-medium">
-                    Sistem Penilaian Cerdas CBT &copy; {{ date('Y') }}
-                </div>
             </div>
         </div>
     @else
-        <div
-            class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 mb-6 flex flex-col sm:flex-row justify-between items-center gap-4 sticky top-0 z-10 transition-colors duration-300">
-            <div>
-                <h2 class="text-2xl font-extrabold text-gray-800 dark:text-white tracking-tight">{{ $exam->title }}</h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Kerjakan dengan jujur dan teliti.</p>
-            </div>
-
-            <div :class="timeLeft <= 300 ? 'bg-red-50 dark:bg-red-900/40 border-red-200 dark:border-red-800/50 animate-pulse ring-2 ring-red-500 dark:ring-red-500/50' : 'bg-indigo-50 dark:bg-gray-700 border-indigo-100 dark:border-gray-600'"
-                class="flex items-center gap-3 px-5 py-2.5 rounded-xl transition-all duration-300" x-data="{ 
-                                                            timeLeft: @entangle('timeLeft'),
-                                                            init() {
-                                                                setInterval(() => {
-                                                                    if (this.timeLeft > 0) {
-                                                                        this.timeLeft--;
-                                                                    } else if (this.timeLeft === 0) {
-                                                                        $wire.submitExam(); // Kumpulkan skor otomatis saat waktu habis
-                                                                        this.timeLeft = -1; // Hindari pengulangan trigger
-                                                                    }
-                                                                }, 1000);
-                                                            },
-                                                            formatTime(seconds) {
-                                                                if (seconds <= 0) return '0:00';
-                                                                let m = Math.floor(seconds / 60);
-                                                                let s = seconds % 60;
-                                                                return m + ':' + s.toString().padStart(2, '0');
-                                                            }
-                                                         }">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                    stroke="currentColor" class="w-6 h-6 animate-pulse"
-                    :class="timeLeft <= 300 ? 'text-red-600 dark:text-red-400' : 'text-indigo-600 dark:text-indigo-400'">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                </svg>
-                <div class="flex flex-col">
-                    <span x-show="timeLeft <= 300"
-                        class="text-[10px] uppercase font-black tracking-wider text-red-600 dark:text-red-400 mb-[-4px]"
-                        style="display: none;">Waktu Kritis</span>
-                    <div :class="timeLeft <= 300 ? 'text-red-700 dark:text-red-300' : 'text-indigo-700 dark:text-indigo-300'"
-                        class="text-xl font-bold font-mono tracking-wider" x-text="formatTime(timeLeft)">
-                        {{ floor($timeLeft / 60) }}:{{ str_pad($timeLeft % 60, 2, '0', STR_PAD_LEFT) }}
-                    </div>
+        {{-- LAYAR 2: KONFIRMASI FULLSCREEN --}}
+        <div x-show="!isFullscreen" class="flex flex-col items-center justify-center min-h-[60vh]">
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg border-2 border-amber-400 w-full max-w-lg text-center">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-amber-100 mb-6">
+                    <svg class="h-8 w-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                    </svg>
                 </div>
+                <h3 class="text-2xl font-black text-gray-900 dark:text-white mb-2">Konfirmasi Ujian</h3>
+                <p class="text-gray-600 dark:text-gray-400 mb-6">Ujian <strong>{{ $exam->title }}</strong> mewajibkan Mode Layar Penuh.</p>
+                
+                <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-xl mb-6 text-left border border-amber-200 dark:border-amber-800">
+                    <p class="font-bold text-amber-800 dark:text-amber-500 mb-2 text-sm">Peraturan:</p>
+                    <ul class="list-disc ml-5 space-y-1 text-sm text-amber-700 dark:text-amber-400">
+                        <li>Dilarang keluar dari mode layar penuh.</li>
+                        <li>Dilarang berpindah tab/aplikasi lain.</li>
+                        <li>Melanggar aturan akan dicatat sebagai kecurangan.</li>
+                    </ul>
+                </div>
+
+                <button @click="toggleFullscreen()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-lg py-4 rounded-xl shadow-md transition-colors">MASUK LAYAR PENUH & MULAI</button>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        {{-- LAYAR 3: RUANG UJIAN --}}
+        <div x-show="isFullscreen" style="display: none;" x-cloak>
+            
+            <!-- HEADER INFO -->
+            <div class="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="text-center sm:text-left">
+                    <h2 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">{{ $exam->title }}</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Siswa: <span class="font-bold">{{ auth()->user()->name }}</span></p>
+                </div>
 
-            <div x-data="{ fontSize: 18 }"
-                class="lg:col-span-3 bg-white dark:bg-gray-800 p-8 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-colors duration-300">
+                <div x-data="{ timeLeft: @entangle('timeLeft'), init() { setInterval(() => { if(this.timeLeft > 0) this.timeLeft--; else if(this.timeLeft === 0) $wire.submitExam(); }, 1000) }, formatTime(s) { let m=Math.floor(s/60); let sec=s%60; return m+':'+sec.toString().padStart(2,'0') } }" 
+                     class="flex items-center gap-3 px-6 py-3 rounded-xl border"
+                     :class="timeLeft <= 300 ? 'bg-red-50 border-red-200 dark:bg-red-900/30 dark:border-red-800' : 'bg-gray-50 border-gray-200 dark:bg-gray-900 dark:border-gray-700'">
+                    <svg class="w-6 h-6" :class="timeLeft <= 300 ? 'text-red-500 animate-pulse' : 'text-gray-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <div class="text-2xl font-mono font-bold" :class="timeLeft <= 300 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'" x-text="formatTime(timeLeft)"></div>
+                </div>
+            </div>
 
-                @php
-                    $currentQuestion = $questionsData[$currentQuestionIndex];
-                @endphp
-
-                <div wire:key="soal-area-{{ $currentQuestion['id'] }}">
-                    @php
-                        $tipeSoal = $currentQuestion['type'];
-                        $tipeLabel = '';
-                        $tipeBg = '';
-                        $petunjuk = '';
-
-                        if ($tipeSoal === 'pg') {
-                            $tipeLabel = 'Pilihan Ganda';
-                            $tipeBg = 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300';
-                            $petunjuk = 'Pilih satu jawaban yang paling tepat.';
-                        } elseif ($tipeSoal === 'pg_kompleks') {
-                            $tipeLabel = 'Pilihan Ganda Kompleks';
-                            $tipeBg = 'bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-300';
-                            $petunjuk = 'Pilih satu atau lebih jawaban yang menurut Anda benar.';
-                        } elseif ($tipeSoal === 'benar_salah') {
-                            $tipeLabel = 'Benar / Salah';
-                            $tipeBg = 'bg-orange-100 dark:bg-orange-900/50 text-orange-800 dark:text-orange-300';
-                            $petunjuk = 'Pilih opsi yang sesuai antara Benar atau Salah.';
-                        } elseif ($tipeSoal === 'isian') {
-                            $tipeLabel = 'Isian Singkat';
-                            $tipeBg = 'bg-teal-100 dark:bg-teal-900/50 text-teal-800 dark:text-teal-300';
-                            $petunjuk = 'Ketik jawaban singkat pada kolom yang tersedia.';
-                        } elseif ($tipeSoal === 'essay') {
-                            $tipeLabel = 'Uraian / Essay';
-                            $tipeBg = 'bg-rose-100 dark:bg-rose-900/50 text-rose-800 dark:text-rose-300';
-                            $petunjuk = 'Uraikan jawaban Anda secara tertulis dan lengkap.';
-                        }
-                    @endphp
-
-                    <div
-                        class="mb-6 border-b border-gray-100 dark:border-gray-700 pb-5 transition-colors duration-300 flex justify-between items-start">
-                        <div>
-                            <div class="flex flex-wrap items-center gap-2 mb-2">
-                                <span
-                                    class="inline-block bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-300 text-xs font-bold px-3 py-1.5 rounded-full">
-                                    SOAL NOMOR {{ $currentQuestionIndex + 1 }}
-                                </span>
-                                <span class="inline-block {{ $tipeBg }} text-xs font-bold px-3 py-1.5 rounded-full">
-                                    {{ $tipeLabel }}
-                                </span>
+            <!-- MAIN GRID -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                
+                <!-- KOLOM KIRI (SOAL) -->
+                <div class="lg:col-span-3">
+                    <div class="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700" wire:key="soal-container-{{ $questionsData[$currentQuestionIndex]['id'] }}">
+                        @php $currentQuestion = $questionsData[$currentQuestionIndex]; @endphp
+                        
+                        <!-- Header Soal -->
+                        <div class="flex justify-between items-center mb-6 border-b border-gray-100 dark:border-gray-700 pb-4">
+                            <span class="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 px-4 py-1.5 rounded-lg font-bold text-sm">Soal Nomor {{ $currentQuestionIndex + 1 }}</span>
+                            <div class="flex gap-2">
+                                <button @click="fontSize = Math.max(14, fontSize - 2)" class="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded text-gray-700 dark:text-gray-300 font-bold hover:bg-gray-200">A-</button>
+                                <button @click="fontSize = Math.min(30, fontSize + 2)" class="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded text-gray-700 dark:text-gray-300 font-bold hover:bg-gray-200">A+</button>
                             </div>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 font-medium italic mt-1">
-                                *Petunjuk: {{ $petunjuk }}
-                            </p>
                         </div>
-                        <div
-                            class="flex items-center gap-2 bg-gray-50 dark:bg-gray-700/50 p-1.5 rounded-lg border border-gray-200 dark:border-gray-600">
-                            <button @click="fontSize = Math.max(12, fontSize - 2)"
-                                class="w-8 h-8 flex items-center justify-center rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 shadow-sm font-bold text-sm transition"
-                                title="Perkecil Teks">A-</button>
-                            <button @click="fontSize = 18"
-                                class="w-8 h-8 flex items-center justify-center rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 shadow-sm font-bold text-sm transition"
-                                title="Reset Teks">A</button>
-                            <button @click="fontSize = Math.min(32, fontSize + 2)"
-                                class="w-8 h-8 flex items-center justify-center rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 shadow-sm font-bold text-sm transition"
-                                title="Perbesar Teks">A+</button>
-                        </div>
-                    </div>
 
-                    <p class="text-gray-800 dark:text-gray-100 font-medium leading-relaxed mb-6 transition-all"
-                        :style="`font-size: ${fontSize}px`">
-                        {{ $currentQuestion['question_text'] }}
-                    </p>
-
-                    @if(!empty($currentQuestion['image_path']))
+                        <!-- Teks Soal -->
                         <div class="mb-6">
-                            <img src="{{ Storage::url($currentQuestion['image_path']) }}" alt="Gambar Soal"
-                                class="max-h-80 object-contain rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                            <p class="text-gray-900 dark:text-gray-100 font-medium leading-relaxed" :style="`font-size: ${fontSize}px`">{{ $currentQuestion['question_text'] }}</p>
                         </div>
-                    @endif
 
-                    @if(!empty($currentQuestion['youtube_url']))
-                        <div
-                            class="mb-6 aspect-video w-full max-w-2xl rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm">
-                            @php
-                                preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i', $currentQuestion['youtube_url'], $match);
-                                $youtubeId = $match[1] ?? null;
-                            @endphp
-                            @if($youtubeId)
-                                <iframe width="100%" height="100%" src="https://www.youtube.com/embed/{{ $youtubeId }}"
-                                    frameborder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowfullscreen></iframe>
-                            @else
-                                <a href="{{ $currentQuestion['youtube_url'] }}" target="_blank"
-                                    class="text-indigo-600 hover:underline">Lihat Video Terkait</a>
+                        <!-- Gambar Soal -->
+                        @if(!empty($currentQuestion['image_path']))
+                            <div class="mb-6">
+                                <img src="{{ Storage::url($currentQuestion['image_path']) }}" class="max-h-80 rounded-xl border dark:border-gray-700">
+                            </div>
+                        @endif
+                        
+                        <!-- Video Soal -->
+                        @if(!empty($currentQuestion['youtube_url']))
+                            <div class="mb-6 aspect-video w-full max-w-2xl rounded-xl overflow-hidden border dark:border-gray-700">
+                                @php
+                                    preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i', $currentQuestion['youtube_url'], $match);
+                                    $youtubeId = $match[1] ?? null;
+                                @endphp
+                                @if($youtubeId)
+                                    <iframe width="100%" height="100%" src="https://www.youtube.com/embed/{{ $youtubeId }}" frameborder="0" allowfullscreen></iframe>
+                                @endif
+                            </div>
+                        @endif
+
+                        <!-- Input Jawaban -->
+                        <div class="space-y-3 mb-8">
+                            @if($currentQuestion['type'] === 'essay')
+                                <textarea wire:model.live="answers.{{ $currentQuestion['id'] }}" rows="5" class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-900 p-4 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ketik jawaban essay Anda..."></textarea>
+                            @elseif($currentQuestion['type'] === 'isian')
+                                <input type="text" wire:model.live="answers.{{ $currentQuestion['id'] }}" class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-900 p-4 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ketik jawaban singkat...">
+                            @elseif(in_array($currentQuestion['type'], ['pg', 'benar_salah']))
+                                @foreach($currentQuestion['options'] as $opt)
+                                    <label wire:key="opsi-{{ $opt['id'] }}" class="flex items-center gap-3 p-4 border rounded-xl cursor-pointer transition-colors {{ (isset($answers[$currentQuestion['id']]) && $answers[$currentQuestion['id']] == $opt['id']) ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50' }}">
+                                        <input type="radio" name="jawaban_soal_{{ $currentQuestion['id'] }}" wire:model.live="answers.{{ $currentQuestion['id'] }}" value="{{ $opt['id'] }}" class="w-5 h-5 text-indigo-600 focus:ring-indigo-500">
+                                        <span class="text-gray-700 dark:text-gray-200" :style="`font-size: ${fontSize-2}px`">{{ $opt['option_text'] }}</span>
+                                    </label>
+                                @endforeach
+                            @elseif($currentQuestion['type'] === 'pg_kompleks')
+                                @foreach($currentQuestion['options'] as $opt)
+                                    <label wire:key="opsi-{{ $opt['id'] }}" class="flex items-center gap-3 p-4 border rounded-xl cursor-pointer transition-colors {{ (isset($answers[$currentQuestion['id']]) && is_array($answers[$currentQuestion['id']]) && in_array($opt['id'], $answers[$currentQuestion['id']])) ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50' }}">
+                                        <input type="checkbox" name="jawaban_soal_{{ $currentQuestion['id'] }}[]" wire:model.live="answers.{{ $currentQuestion['id'] }}" value="{{ $opt['id'] }}" class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500">
+                                        <span class="text-gray-700 dark:text-gray-200" :style="`font-size: ${fontSize-2}px`">{{ $opt['option_text'] }}</span>
+                                    </label>
+                                @endforeach
                             @endif
                         </div>
-                    @endif
 
-                    <div class="space-y-4 mb-10">
-                        @if($currentQuestion['type'] === 'essay')
-                            <textarea wire:model.live="answers.{{ $currentQuestion['id'] }}" rows="8"
-                                class="w-full rounded-xl border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-white shadow-inner focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 transition p-4 font-medium"
-                                placeholder="Ketik jawaban lengkap Anda di sini..."></textarea>
-                        @elseif($currentQuestion['type'] === 'isian')
-                            <input type="text" wire:model.live="answers.{{ $currentQuestion['id'] }}"
-                                class="w-full rounded-xl border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-white shadow-inner focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 transition p-4 font-medium"
-                                placeholder="Ketik jawaban singkat di sini...">
-                        @elseif($currentQuestion['type'] === 'pg' || $currentQuestion['type'] === 'benar_salah')
-                            @foreach($currentQuestion['options'] as $option)
-                                <label wire:key="opsi-{{ $option['id'] }}"
-                                    class="flex items-center space-x-4 p-4 border rounded-xl cursor-pointer transition-all duration-200 {{ isset($answers[$currentQuestion['id']]) && $answers[$currentQuestion['id']] == $option['id'] ? 'bg-indigo-50 dark:bg-indigo-900/40 border-indigo-500 dark:border-indigo-400 ring-1 ring-indigo-500 dark:ring-indigo-400' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:border-gray-300 dark:hover:border-gray-600' }}">
-
-                                    <input type="radio" name="jawaban_soal_{{ $currentQuestion['id'] }}"
-                                        wire:model.live="answers.{{ $currentQuestion['id'] }}" value="{{ $option['id'] }}"
-                                        class="w-5 h-5 text-indigo-600 dark:text-indigo-400 border-gray-300 dark:border-gray-600 focus:ring-indigo-500 dark:focus:ring-indigo-400 dark:bg-gray-800 dark:checked:bg-indigo-400">
-
-                                    <span :style="`font-size: ${Math.max(14, fontSize - 2)}px`"
-                                        class="text-gray-700 dark:text-gray-200 font-medium transition-all {{ isset($answers[$currentQuestion['id']]) && $answers[$currentQuestion['id']] == $option['id'] ? 'dark:text-indigo-100' : '' }}">{{ $option['option_text'] }}</span>
-                                </label>
-                            @endforeach
-                        @elseif($currentQuestion['type'] === 'pg_kompleks')
-                            @foreach($currentQuestion['options'] as $option)
-                                <label wire:key="opsi-{{ $option['id'] }}"
-                                    class="flex items-center space-x-4 p-4 border rounded-xl cursor-pointer transition-all duration-200 {{ isset($answers[$currentQuestion['id']]) && is_array($answers[$currentQuestion['id']]) && in_array($option['id'], $answers[$currentQuestion['id']]) ? 'bg-indigo-50 dark:bg-indigo-900/40 border-indigo-500 dark:border-indigo-400 ring-1 ring-indigo-500 dark:ring-indigo-400' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:border-gray-300 dark:hover:border-gray-600' }}">
-
-                                    <input type="checkbox" name="jawaban_soal_{{ $currentQuestion['id'] }}[]"
-                                        wire:model.live="answers.{{ $currentQuestion['id'] }}" value="{{ $option['id'] }}"
-                                        class="w-5 h-5 rounded text-indigo-600 dark:text-indigo-400 border-gray-300 dark:border-gray-600 focus:ring-indigo-500 dark:focus:ring-indigo-400 dark:bg-gray-800 dark:checked:bg-indigo-400">
-
-                                    <span :style="`font-size: ${Math.max(14, fontSize - 2)}px`"
-                                        class="text-gray-700 dark:text-gray-200 font-medium transition-all {{ isset($answers[$currentQuestion['id']]) && is_array($answers[$currentQuestion['id']]) && in_array($option['id'], $answers[$currentQuestion['id']]) ? 'dark:text-indigo-100' : '' }}">{{ $option['option_text'] }}</span>
-                                </label>
-                            @endforeach
-                        @endif
-                    </div>
-
-                    <div
-                        class="flex flex-col sm:flex-row justify-between items-center bg-gray-50 dark:bg-gray-900/20 p-4 rounded-xl border border-gray-100 dark:border-gray-700/50 mb-6">
-                        <label
-                            class="flex items-center gap-3 cursor-pointer text-yellow-600 dark:text-yellow-500 font-bold hover:opacity-80 transition-opacity">
-                            <input type="checkbox" wire:click="toggleDoubt" @if(in_array($currentQuestion['id'], $doubtfulQuestions)) checked @endif
-                                class="w-6 h-6 text-yellow-500 focus:ring-yellow-500 border-gray-300 rounded cursor-pointer">
-                            Ragu - Ragu
-                        </label>
-
-                        @if(isset($answers[$currentQuestion['id']]) && $answers[$currentQuestion['id']] !== '' && $answers[$currentQuestion['id']] !== [])
-                            <button wire:click="clearAnswer"
-                                class="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-bold transition-colors mt-4 sm:mt-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
-                                    stroke="currentColor" class="w-4 h-4">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                                Hapus Jawaban
+                        <!-- Tombol Navigasi Bawah Soal -->
+                        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-gray-100 dark:border-gray-700">
+                            <button wire:click="prevQuestion" @if($currentQuestionIndex == 0) disabled @endif class="w-full sm:w-auto px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold rounded-xl disabled:opacity-50">
+                                &laquo; Sebelumnya
                             </button>
-                        @endif
+
+                            <button wire:click="toggleDoubt" class="w-full sm:w-auto px-8 py-3 border-2 font-bold rounded-xl {{ in_array($currentQuestion['id'], $doubtfulQuestions) ? 'bg-yellow-100 border-yellow-400 text-yellow-700 dark:bg-yellow-900/30' : 'border-gray-300 text-gray-600 dark:border-gray-600 dark:text-gray-400' }}">
+                                <input type="checkbox" class="mr-2 rounded text-yellow-500 focus:ring-yellow-500" @if(in_array($currentQuestion['id'], $doubtfulQuestions)) checked @endif> Ragu-ragu
+                            </button>
+
+                            @if($currentQuestionIndex < count($questionsData) - 1)
+                                <button wire:click="nextQuestion" class="w-full sm:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md">
+                                    Selanjutnya &raquo;
+                                </button>
+                            @else
+                                <button @click="showSubmitConfirm = true" class="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md">
+                                    Selesai Ujian
+                                </button>
+                            @endif
+                        </div>
                     </div>
                 </div>
 
-                <div
-                    class="flex justify-between items-center pt-6 border-t border-gray-100 dark:border-gray-700 transition-colors duration-300">
-                    @if($currentQuestionIndex > 0)
-                        <button wire:click="prevQuestion"
-                            class="flex items-center gap-2 px-6 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
-                            &laquo; Sebelumnya
-                        </button>
-                    @else
-                    <div></div> @endif
+                <!-- KOLOM KANAN (PETA SOAL) -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 sticky top-6">
+                        <h3 class="font-bold text-gray-900 dark:text-white mb-4 border-b border-gray-100 dark:border-gray-700 pb-2">Navigasi Soal</h3>
+                        
+                        <div class="grid grid-cols-5 sm:grid-cols-8 lg:grid-cols-4 gap-2 mb-6">
+                            @foreach($questionsData as $index => $q)
+                                @php 
+                                    $isAnswered = isset($answers[$q['id']]) && $answers[$q['id']] !== '' && $answers[$q['id']] !== [];
+                                    $isActive = $index === $currentQuestionIndex;
+                                    $isDoubt = in_array($q['id'], $doubtfulQuestions);
+                                    
+                                    $bgClass = 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'; // Default Belum
 
-                    @if($currentQuestionIndex < count($questionsData) - 1)
-                        <button wire:click="nextQuestion"
-                            class="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 dark:bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors duration-200 shadow-sm">
-                            Selanjutnya &raquo;
+                                    if ($isDoubt) {
+                                        $bgClass = 'bg-yellow-400 text-yellow-900 border border-yellow-500 dark:border-yellow-600 shadow-inner'; // Ragu
+                                    } elseif ($isAnswered) {
+                                        $bgClass = 'bg-green-500 text-white border border-green-600 dark:border-green-500 shadow-inner'; // Dijawab & Yakin
+                                    }
+                                @endphp
+
+                                <button wire:click="jumpToQuestion({{ $index }})" class="w-full aspect-square rounded-lg flex items-center justify-center text-sm font-bold transition-all duration-200
+                                                                                                                          {{ $isActive ? 'ring-2 ring-offset-2 dark:ring-offset-gray-800 ring-indigo-500 transform scale-105' : '' }}
+                                                                                                                          {{ $bgClass }}">
+                                    {{ $index + 1 }}
+                                </button>
+                            @endforeach
+                        </div>
+
+                        <div class="space-y-3 mb-6 text-sm">
+                            <div class="flex items-center gap-2"><div class="w-4 h-4 bg-green-500 rounded-sm"></div> <span class="text-gray-600 dark:text-gray-400 font-medium">Sudah Dijawab</span></div>
+                            <div class="flex items-center gap-2"><div class="w-4 h-4 bg-yellow-400 rounded-sm border border-yellow-500"></div> <span class="text-gray-600 dark:text-gray-400 font-medium">Ragu-ragu</span></div>
+                            <div class="flex items-center gap-2"><div class="w-4 h-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-sm"></div> <span class="text-gray-600 dark:text-gray-400 font-medium">Belum Dijawab</span></div>
+                        </div>
+
+                        <button @click="showSubmitConfirm = true" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm">
+                            Kumpulkan Ujian
                         </button>
-                    @endif
+                    </div>
                 </div>
 
             </div>
-
-            <div class="lg:col-span-1">
-                <div
-                    class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 h-fit sticky top-28 transition-colors duration-300">
-
-                    <h3
-                        class="font-extrabold text-gray-800 dark:text-gray-100 mb-4 border-b border-gray-100 dark:border-gray-700 pb-3 flex items-center gap-2 transition-colors duration-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                            stroke="currentColor" class="w-5 h-5 text-indigo-500 dark:text-indigo-400">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
-                        </svg>
-                        Peta Soal
-                    </h3>
-
-                    <div class="grid grid-cols-5 gap-2 mb-8">
-                        @foreach($questionsData as $index => $q)
-                            @php
-                                $isAnswered = isset($answers[$q['id']]) && $answers[$q['id']] !== '' && $answers[$q['id']] !== [];
-                                $isActive = $index === $currentQuestionIndex;
-                                $isDoubt = in_array($q['id'], $doubtfulQuestions);
-
-                                $bgClass = 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'; // Default Belum
-
-                                if ($isDoubt) {
-                                    $bgClass = 'bg-yellow-400 text-yellow-900 border border-yellow-500 dark:border-yellow-600 shadow-inner'; // Ragu
-                                } elseif ($isAnswered) {
-                                    $bgClass = 'bg-green-500 text-white border border-green-600 dark:border-green-500 shadow-inner'; // Dijawab & Yakin
-                                }
-                            @endphp
-
-                            <button wire:click="jumpToQuestion({{ $index }})" class="w-full aspect-square rounded-lg flex items-center justify-center text-sm font-bold transition-all duration-200
-                                                                                                                            {{ $isActive ? 'ring-2 ring-offset-2 dark:ring-offset-gray-800 ring-indigo-500 transform scale-105' : '' }}
-                                                                                                                            {{ $bgClass }}
-                                                                                                                            ">
-                                {{ $index + 1 }}
-                            </button>
-                        @endforeach
-                    </div>
-
-                    <div class="space-y-3 mb-6">
-                        <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 font-medium">
-                            <div class="w-4 h-4 bg-green-500 rounded-sm"></div> Sudah Dijawab
-                        </div>
-                        <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 font-medium">
-                            <div class="w-4 h-4 bg-yellow-400 rounded-sm border border-yellow-500"></div> Ragu-Ragu
-                        </div>
-                        <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 font-medium">
-                            <div
-                                class="w-4 h-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-sm">
-                            </div> Belum Dijawab
-                        </div>
-                    </div>
-
-                    <button @click="showSubmitConfirm = true"
-                        class="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-emerald-600 dark:bg-emerald-500 hover:bg-emerald-700 dark:hover:bg-emerald-600 focus:ring-4 focus:ring-emerald-200 dark:focus:ring-emerald-900 transition-colors duration-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                            stroke="currentColor" class="w-5 h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 0 1 9 9v.375M10.125 2.25A3.375 3.375 0 0 1 13.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 0 1 3.375 3.375M9 15l2.25 2.25L15 12" />
-                        </svg>
-                        Kumpulkan Ujian
-                    </button>
-
-                </div>
-            </div>
-
         </div>
     @endif
 </div>

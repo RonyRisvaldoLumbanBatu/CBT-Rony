@@ -21,6 +21,8 @@ class TakeExam extends Component
     // Variabel antarmuka untuk PIN
     public $isPinVerified = false;
 
+    public $isFullscreen = false;
+
     public $inputPin = '';
 
     // Variabel baru untuk menampung soal yang sudah diacak
@@ -138,6 +140,13 @@ class TakeExam extends Component
     }
 
     // Auto-Save setiap ada perubahan jawaban
+    public function updated($property)
+    {
+        if (str_starts_with($property, 'answers')) {
+            $this->updatedAnswers();
+        }
+    }
+
     public function updatedAnswers()
     {
         session()->put('ujian_answers_'.$this->exam->id, $this->answers);
