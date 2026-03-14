@@ -1,14 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Exam;
 use App\Models\Result;
-use Barryvdh\DomPDF\Facade\Pdf; // Panggil mesin PDF-nya
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Response;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ExportController extends Controller
 {
-    public function exportPdf($examId)
+    /**
+     * Export the exam results to a PDF file.
+     */
+    public function exportPdf(int $examId): Response
     {
         // 1. Tarik data ujiannya
         $exam = Exam::findOrFail($examId);
@@ -26,11 +34,14 @@ class ExportController extends Controller
         return $pdf->download('Rekap_Nilai_'.str_replace(' ', '_', $exam->title).'.pdf');
     }
 
-    public function exportExcel($examId)
+    /**
+     * Export the exam results to an Excel file.
+     */
+    public function exportExcel(int $examId): BinaryFileResponse
     {
         $exam = Exam::findOrFail($examId);
         $fileName = 'Rekap_Nilai_'.str_replace(' ', '_', $exam->title).'.xlsx';
 
-        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\ExamResultsExport($examId), $fileName);
+        return Excel::download(new \App\Exports\ExamResultsExport($examId), $fileName);
     }
 }

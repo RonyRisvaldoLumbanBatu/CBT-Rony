@@ -1,14 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Exam extends Model
 {
-    // Tambahkan 'is_active' dan 'token' di dalam array $fillable
-    protected $fillable = ['title', 'description', 'time_limit', 'is_active', 'token'];
-    
+    /**
+     * @var list<string>
+     */
+    protected $fillable = [
+        'title',
+        'description',
+        'time_limit',
+        'is_active',
+        'token',
+    ];
+
+    /**
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return [
@@ -16,14 +30,18 @@ class Exam extends Model
         ];
     }
 
-    // 2. Relasi: Satu ujian punya BANYAK soal
-    public function questions()
+    /**
+     * Relasi: Satu ujian punya BANYAK soal.
+     */
+    public function questions(): HasMany
     {
         return $this->hasMany(Question::class);
     }
 
-    // 3. Relasi: Satu ujian punya BANYAK hasil (result) pengerjaan
-    public function results()
+    /**
+     * Relasi: Satu ujian punya BANYAK hasil (result) pengerjaan.
+     */
+    public function results(): HasMany
     {
         return $this->hasMany(Result::class);
     }
