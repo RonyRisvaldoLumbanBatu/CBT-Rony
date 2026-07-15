@@ -4,12 +4,16 @@ namespace App\Livewire;
 
 use App\Models\Exam;
 use App\Models\Result;
+use App\Services\ExamGrader;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 #[Layout('layouts.app')]
 class TakeExam extends Component
 {
+    // Toleransi keterlambatan submit (detik) untuk latensi jaringan
+    private const SUBMIT_GRACE_SECONDS = 30;
+
     public Exam $exam;
 
     public $currentQuestionIndex = 0;
@@ -56,6 +60,13 @@ class TakeExam extends Component
 
         // 2. Tarik data ujian
         $this->exam = Exam::with('questions.options')->findOrFail($id);
+
+        // Tolak akses langsung via URL ke ujian yang belum diaktifkan guru
+        if (! $this->exam->is_active) {
+            session()->flash('error', 'Ujian ini belum dibuka. Hubungi gurumu!');
+
+            return redirect()->route('dashboard');
+        }
 
         // Verifikasi PIN
         if (empty($this->exam->token)) {
@@ -149,7 +160,21 @@ class TakeExam extends Component
 
     public function updatedAnswers()
     {
+        // Setelah batas waktu lewat, perubahan jawaban tidak disimpan lagi
+        // (mencegah siswa membekukan timer di browser lalu terus mengerjakan)
+        if ($this->isTimeUp()) {
+            return;
+        }
+
         session()->put('ujian_answers_'.$this->exam->id, $this->answers);
+    }
+
+    private function isTimeUp(): bool
+    {
+        $deadline = session()->get('ujian_selesai_'.$this->exam->id);
+
+        return $deadline !== null
+            && now()->timestamp > $deadline + self::SUBMIT_GRACE_SECONDS;
     }
 
     public function nextQuestion()
@@ -220,57 +245,35 @@ class TakeExam extends Component
 
     public function submitExam()
     {
-        $jawabanBenar = 0;
+        $grader = app(ExamGrader::class);
 
-        // Filter Total Soal yang otomatis dinilai sistem
-        $tipeOtomatis = ['pg', 'pg_kompleks', 'benar_salah', 'isian'];
-        $totalSoalOtomatis = count(array_filter($this->questionsData, fn ($q) => in_array($q['type'], $tipeOtomatis)));
-
-        foreach ($this->questionsData as $q) {
-            if (! isset($this->answers[$q['id']])) {
-                continue;
-            }
-
-            $userAns = $this->answers[$q['id']];
-
-            if ($q['type'] === 'pg' || $q['type'] === 'benar_salah') {
-                $isCorrect = \App\Models\Option::where('id', $userAns)->where('is_correct', true)->exists();
-                if ($isCorrect) {
-                    $jawabanBenar++;
-                }
-            } elseif ($q['type'] === 'pg_kompleks') {
-                // userAns harus berbentuk array untuk PG Kompleks
-                if (is_array($userAns)) {
-                    $correctOptionIds = \App\Models\Option::where('question_id', $q['id'])->where('is_correct', true)->pluck('id')->toArray();
-                    sort($userAns);
-                    sort($correctOptionIds);
-                    if ($userAns == $correctOptionIds) {
-                        $jawabanBenar++;
-                    }
-                }
-            } elseif ($q['type'] === 'isian') {
-                $correctOption = \App\Models\Option::where('question_id', $q['id'])->where('is_correct', true)->first();
-                if ($correctOption && is_string($userAns) && strtolower(trim($userAns)) === strtolower(trim($correctOption->option_text))) {
-                    $jawabanBenar++;
-                }
-            }
+        // Penegakan waktu di sisi SERVER: jika batas waktu sudah lewat,
+        // nilai hanya dari jawaban terakhir yang tersimpan sebelum deadline
+        // (timer di browser bisa dimanipulasi, session tidak)
+        if ($this->isTimeUp()) {
+            $this->answers = session()->get('ujian_answers_'.$this->exam->id, $this->answers);
         }
 
-        // Antisipasi pembagian dengan nol
-        $nilaiAkhir = $totalSoalOtomatis > 0 ? ($jawabanBenar / $totalSoalOtomatis) * 100 : 0;
-        $nilaiBulat = (int) round($nilaiAkhir);
+        $questions = $this->exam->questions()->with('options')->get();
+        $nilaiBulat = (int) round($grader->autoScore($questions, $this->answers));
 
-        Result::create([
-            'user_id' => auth()->id(),
-            'exam_id' => $this->exam->id,
-            'score' => $nilaiBulat,
-            'answers_data' => $this->answers, // json array menyimpan seluruh histori jawaban essay & pilihan
-        ]);
+        // firstOrCreate + unique index di DB mencegah nilai ganda
+        // saat timer habis bersamaan dengan klik tombol submit
+        Result::firstOrCreate(
+            [
+                'user_id' => auth()->id(),
+                'exam_id' => $this->exam->id,
+            ],
+            [
+                'score' => $nilaiBulat,
+                'answers_data' => $this->answers, // json array menyimpan seluruh histori jawaban essay & pilihan
+            ]
+        );
 
         event(new \App\Events\StudentExamUpdate(
             $this->exam->id,
             auth()->user()->name,
-            'Telah Mengumpulkan Ujian dengan Nilai: '.$nilaiAkhir
+            'Telah Mengumpulkan Ujian dengan Nilai: '.$nilaiBulat
         ));
 
         session()->forget([
@@ -281,7 +284,7 @@ class TakeExam extends Component
             'ujian_index_'.$this->exam->id,
             'pin_verified_'.$this->exam->id,
         ]);
-        session()->flash('sukses', 'Ujian selesai! Nilai kamu: '.$nilaiAkhir);
+        session()->flash('sukses', 'Ujian selesai! Nilai kamu: '.$nilaiBulat);
 
         return redirect()->route('dashboard');
     }

@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Exam;
 use App\Models\Result;
+use App\Services\ExamGrader;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -25,7 +26,7 @@ class GradeExam extends Component
 
     public function mount($id)
     {
-        $this->exam = Exam::with('questions')->findOrFail($id);
+        $this->exam = Exam::with('questions.options')->findOrFail($id);
     }
 
     public function openGradeModal($resultId)
@@ -55,73 +56,17 @@ class GradeExam extends Component
         $this->selectedResult = null;
     }
 
-    public function saveScores()
+    public function saveScores(ExamGrader $grader)
     {
         // Validasi input max 100
         $this->validate([
             'essayScores.*' => 'required|numeric|min:0|max:100',
         ]);
 
-        // Kalkulasi ulang seluruh nilai agar valid dan adil!
-        $allQuestions = $this->exam->questions;
-        $tipeOtomatis = ['pg', 'pg_kompleks', 'benar_salah', 'isian'];
-
-        $soalOtomatis = $allQuestions->whereIn('type', $tipeOtomatis);
-        $totalSoalOtomatis = $soalOtomatis->count();
-        $totalEssay = $this->essayQuestions->count();
-
+        // Kalkulasi ulang seluruh nilai (logika sama persis dengan TakeExam
+        // karena keduanya memakai ExamGrader yang sama)
         $answersData = $this->selectedResult->answers_data ?? [];
-        $jawabanBenar = 0;
-
-        // Hitung ulang PG persis seperti di TakeExam.php (Mencegah bug sinkronisasi nilai)
-        foreach ($soalOtomatis as $q) {
-            if (! isset($answersData[$q->id])) {
-                continue;
-            }
-
-            $userAns = $answersData[$q->id];
-
-            if ($q->type === 'pg' || $q->type === 'benar_salah') {
-                $isCorrect = \App\Models\Option::where('id', $userAns)->where('is_correct', true)->exists();
-                if ($isCorrect) {
-                    $jawabanBenar++;
-                }
-            } elseif ($q->type === 'pg_kompleks' && is_array($userAns)) {
-                $correctOptionIds = \App\Models\Option::where('question_id', $q->id)->where('is_correct', true)->pluck('id')->toArray();
-                sort($userAns);
-                sort($correctOptionIds);
-                if ($userAns == $correctOptionIds) {
-                    $jawabanBenar++;
-                }
-            } elseif ($q->type === 'isian') {
-                $correctOption = \App\Models\Option::where('question_id', $q->id)->where('is_correct', true)->first();
-                if ($correctOption && strtolower(trim($userAns)) === strtolower(trim($correctOption->option_text))) {
-                    $jawabanBenar++;
-                }
-            }
-        }
-
-        // Skor otomatis out of 100 (PG Max 100, Jika tidak ada PG = 0)
-        $skorPG = $totalSoalOtomatis > 0 ? ($jawabanBenar / $totalSoalOtomatis) * 100 : 0;
-
-        // Skor Essay
-        $sumEssay = array_sum($this->essayScores); // Total nilai semua essay
-        $skorEssayRataRata = $totalEssay > 0 ? ($sumEssay / $totalEssay) : 0;
-
-        // Gabungan
-        // Skenario A: Ada PG ada Essay -> (SkorPG + SkorEssay) / 2
-        // Skenario B: Hanya PG -> SkorPG
-        // Skenario C: Hanya Essay -> SkorEssayRataRata
-        $nilaiAkhir = 0;
-        if ($totalSoalOtomatis > 0 && $totalEssay > 0) {
-            $nilaiAkhir = ($skorPG + $skorEssayRataRata) / 2;
-        } elseif ($totalSoalOtomatis > 0) {
-            $nilaiAkhir = $skorPG;
-        } elseif ($totalEssay > 0) {
-            $nilaiAkhir = $skorEssayRataRata;
-        }
-
-        $nilaiBulat = (int) round($nilaiAkhir);
+        $nilaiBulat = $grader->finalScore($this->exam->questions, $answersData, $this->essayScores);
 
         // Update database!
         $this->selectedResult->update([

@@ -28,3 +28,4 @@ database/*.sqlite-journal
 /auth.json
 Homestead.json
 Homestead.yaml
+/.claude

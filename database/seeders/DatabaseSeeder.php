@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Pak Guru IT',
             'email' => 'guru@ujian.com',
             'password' => bcrypt('password123'), // Ingat password ini ya!
+            'role' => 'guru',
         ]);
 
         // 2. Buat 1 Data Ujian

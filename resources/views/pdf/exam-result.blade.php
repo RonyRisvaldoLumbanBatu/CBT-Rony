@@ -48,7 +48,7 @@
                 <tr>
                     <td colspan="4" style="text-align: center; color: #999;">Belum ada siswa yang mengerjakan ujian ini.</td>
                 </tr>
-            @endempty
+            @endforelse
         </tbody>
     </table>
 

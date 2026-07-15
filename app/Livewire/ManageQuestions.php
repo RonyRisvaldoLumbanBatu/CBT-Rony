@@ -260,8 +260,11 @@ class ManageQuestions extends Component
             ]);
         }
 
+        // Simpan mode SEBELUM closeModal, karena closeModal me-reset isEditMode
+        $wasEditMode = $this->isEditMode;
+
         $this->closeModal();
-        session()->flash('sukses', $this->isEditMode ? 'Soal berhasil direvisi!' : 'Soal baru berhasil ditambahkan manual!');
+        session()->flash('sukses', $wasEditMode ? 'Soal berhasil direvisi!' : 'Soal baru berhasil ditambahkan manual!');
     }
 
     public function deleteQuestion($id)

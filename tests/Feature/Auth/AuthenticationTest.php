@@ -60,7 +60,8 @@ class AuthenticationTest extends TestCase
 
         $this->actingAs($user);
 
-        $response = $this->get('/dashboard');
+        // /dashboard adalah redirector berdasarkan role, jadi ikuti redirect-nya
+        $response = $this->followingRedirects()->get('/dashboard');
 
         $response
             ->assertOk()

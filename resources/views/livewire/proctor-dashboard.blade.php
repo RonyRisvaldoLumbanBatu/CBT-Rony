@@ -56,7 +56,7 @@
                     <p class="text-gray-500 dark:text-gray-400 font-medium text-lg">Radar Siaga</p>
                     <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">Menunggu aktivitas masuk. Log akan otomatis muncul di sini saat siswa mulai ujian.</p>
                 </div>
-            @endempty
+            @endforelse
         </div>
     </div>
 </div>

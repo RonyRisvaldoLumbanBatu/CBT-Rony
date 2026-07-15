@@ -3,8 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Exam;
-use App\Models\Option;
-use App\Models\Result;
+use App\Services\ExamGrader;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -17,13 +16,13 @@ class ItemAnalysis extends Component
 
     public $totalParticipants = 0;
 
-    public function mount($id)
+    public function mount($id, ExamGrader $grader)
     {
         $this->exam = Exam::with(['questions.options', 'results'])->findOrFail($id);
-        $this->calculateAnalysis();
+        $this->calculateAnalysis($grader);
     }
 
-    private function calculateAnalysis()
+    private function calculateAnalysis(ExamGrader $grader)
     {
         $results = $this->exam->results;
         $this->totalParticipants = $results->count();
@@ -35,73 +34,27 @@ class ItemAnalysis extends Component
 
         foreach ($this->exam->questions as $question) {
             $benar = 0;
-            $salah = 0;
-            $distribusiOpsi = []; // Untuk melacak jumlah siswa yang memilih Tiap Opsi (A,B,C,D)
-
-            // Inisialisasi daftar opsi untuk grafik batang
-            if (in_array($question->type, ['pg', 'benar_salah'])) {
-                foreach ($question->options as $opt) {
-                    $distribusiOpsi[$opt->id] = [
-                        'text' => $opt->option_text,
-                        'is_correct' => $opt->is_correct,
-                        'count' => 0,
-                    ];
-                }
-            }
 
             // Loop untuk mengecek jawaban setiap peserta
+            // (options sudah di-eager-load, jadi tidak ada query di dalam loop)
             foreach ($results as $result) {
                 // answers_data format: ['question_id' => 'user_answer']
                 $answersData = $result->answers_data ?? [];
 
-                if (! isset($answersData[$question->id])) {
-                    $salah++; // Tidak dijawab dianggap salah
-
-                    continue;
-                }
-
-                $userAns = $answersData[$question->id];
-
-                // Hitung Tingkat Kebenaran berdasarkan Tipe Soal
-                if ($question->type === 'pg' || $question->type === 'benar_salah') {
-                    // Update Distribusi Opsi jika PG / B-S
-                    if (isset($distribusiOpsi[$userAns])) {
-                        $distribusiOpsi[$userAns]['count']++;
-                    }
-
-                    $isCorrect = Option::where('id', $userAns)->where('is_correct', true)->exists();
-                    if ($isCorrect) {
-                        $benar++;
-                    } else {
-                        $salah++;
-                    }
-                } elseif ($question->type === 'pg_kompleks' && is_array($userAns)) {
-                    $correctOptionIds = Option::where('question_id', $question->id)->where('is_correct', true)->pluck('id')->toArray();
-                    sort($userAns);
-                    sort($correctOptionIds);
-                    if ($userAns == $correctOptionIds) {
-                        $benar++;
-                    } else {
-                        $salah++;
-                    }
-                } elseif ($question->type === 'isian') {
-                    $correctOption = Option::where('question_id', $question->id)->where('is_correct', true)->first();
-                    if ($correctOption && strtolower(trim($userAns)) === strtolower(trim($correctOption->option_text))) {
-                        $benar++;
-                    } else {
-                        $salah++;
-                    }
-                } elseif ($question->type === 'essay') {
-                    // Cek tabel essay_scores dari result
+                if ($question->type === 'essay') {
+                    // Kriteria Essay 'Benar' dinilai KKM >= 60 dari tabel essay_scores
                     $essayScores = $result->essay_scores ?? [];
                     if (isset($essayScores[$question->id]) && $essayScores[$question->id] >= 60) {
-                        // Kriteria Essay 'Benar' dinilai KKM >= 60
                         $benar++;
-                    } else {
-                        $salah++;
                     }
+                } elseif (isset($answersData[$question->id])
+                    && $grader->isAnswerCorrect($question, $answersData[$question->id])) {
+                    $benar++;
                 }
             }
+
+            // Tidak dijawab / jawaban salah sama-sama dihitung salah
+            $salah = $this->totalParticipants - $benar;
 
             // Tingkat Kesukaran (Difficulty Index)
             // Rumus D = Jumlah Siswa Jawab Benar / Total Peserta Tertinggi -> Dikalikan 100%
@@ -127,7 +80,6 @@ class ItemAnalysis extends Component
                 'tingkat_kesukaran' => round($tingkatKesukaran, 2),
                 'kategori_kesulitan' => $kategoriKesulitan,
                 'warna_label' => $warnaLabel,
-                'distribusi' => $distribusiOpsi,
             ];
         }
     }
