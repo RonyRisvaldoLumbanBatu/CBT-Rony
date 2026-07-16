@@ -20,7 +20,10 @@ Route::get('/guru/dashboard', \App\Livewire\TeacherDashboard::class)
 
 // 3. Rute Khusus Siswa (Pindahkan logika Leaderboard & Riwayat kemarin ke sini)
 Route::get('/siswa/dashboard', function () {
-    $riwayatNilai = \App\Models\Result::with('exam')->where('user_id', auth()->id())->latest()->get();
+    // essay_count dipakai view untuk menampilkan badge "menunggu penilaian essay"
+    $riwayatNilai = \App\Models\Result::with(['exam' => function ($query) {
+        $query->withCount(['questions as essay_count' => fn ($q) => $q->where('type', 'essay')]);
+    }])->where('user_id', auth()->id())->latest()->get();
 
     $ujianTersedia = \App\Models\Exam::where('is_active', true)
         ->whereNotIn('id', $riwayatNilai->pluck('exam_id'))->get();

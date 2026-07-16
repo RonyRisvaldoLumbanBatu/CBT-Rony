@@ -20,6 +20,7 @@ class ExportController extends Controller
     {
         // 1. Tarik data ujiannya
         $exam = Exam::findOrFail($examId);
+        abort_unless($exam->isOwnedBy(auth()->user()), 403, 'Ujian ini milik guru lain.');
 
         // 2. Tarik semua nilai siswa untuk ujian ini, urutkan dari nilai tertinggi
         $results = Result::with('user')
@@ -40,6 +41,7 @@ class ExportController extends Controller
     public function exportExcel(int $examId): BinaryFileResponse
     {
         $exam = Exam::findOrFail($examId);
+        abort_unless($exam->isOwnedBy(auth()->user()), 403, 'Ujian ini milik guru lain.');
         $fileName = 'Rekap_Nilai_'.str_replace(' ', '_', $exam->title).'.xlsx';
 
         return Excel::download(new \App\Exports\ExamResultsExport($examId), $fileName);

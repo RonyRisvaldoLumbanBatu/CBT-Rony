@@ -16,9 +16,7 @@
 
     @if(session('sukses'))
         <div class="mb-6 bg-green-50 dark:bg-green-900/30 border-l-4 border-green-500 p-4 shadow-sm rounded-r-lg flex items-center gap-3">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-green-600 dark:text-green-400">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <x-icon name="check-circle" stroke="1.5" class="w-6 h-6 text-green-600 dark:text-green-400" />
             <span class="text-green-700 dark:text-green-400 font-medium">{{ session('sukses') }}</span>
         </div>
     @endif
@@ -28,8 +26,8 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-gray-50 dark:bg-gray-900/50 text-gray-600 dark:text-gray-300 text-sm uppercase tracking-wider">
-                        <th class="py-4 px-6 font-bold border-b dark:border-gray-700">Mahasiswa</th>
-                        <th class="py-4 px-6 font-bold border-b dark:border-gray-700 text-center">NIM / Email</th>
+                        <th class="py-4 px-6 font-bold border-b dark:border-gray-700">Siswa</th>
+                        <th class="py-4 px-6 font-bold border-b dark:border-gray-700 text-center">Email</th>
                         <th class="py-4 px-6 font-bold border-b dark:border-gray-700 text-center">Skor Akhir / Status</th>
                         <th class="py-4 px-6 font-bold border-b dark:border-gray-700 text-center">Aksi Penilaian</th>
                     </tr>
@@ -64,7 +62,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="py-12 text-center text-gray-500 dark:text-gray-400 italic">Belum ada mahasiswa yang mengumpulkan ujian ini.</td>
+                            <td colspan="4" class="py-12 text-center text-gray-500 dark:text-gray-400 italic">Belum ada siswa yang mengumpulkan ujian ini.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -80,7 +78,7 @@
                 <!-- Modal Header -->
                 <div class="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700 sticky top-0 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-t-2xl z-10">
                     <div>
-                        <h3 class="text-xl font-extrabold text-gray-800 dark:text-gray-100">Penilaian Essay Mahasiswa</h3>
+                        <h3 class="text-xl font-extrabold text-gray-800 dark:text-gray-100">Penilaian Essay Siswa</h3>
                         <p class="text-sm font-bold text-indigo-600 dark:text-indigo-400 mt-1">{{ $selectedResult->user->name }} - {{ $selectedResult->user->email }}</p>
                     </div>
                     <button wire:click="closeModal" class="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg transition" title="Tutup">
@@ -108,14 +106,14 @@
                                     </div>
                                 </div>
                                 <div class="p-5 bg-transparent">
-                                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Jawaban Mahasiswa:</label>
+                                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Jawaban Siswa:</label>
                                     <div class="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 font-medium whitespace-pre-wrap leading-relaxed shadow-sm">
                                         {{ $essayAnswers[$q->id] }}
                                     </div>
                                 </div>
                             </div>
                         @empty
-                            <div class="text-center py-10 text-gray-500 dark:text-gray-400 font-medium italic">Tidak ada jawaban tipe essay untuk mahasiswa ini.</div>
+                            <div class="text-center py-10 text-gray-500 dark:text-gray-400 font-medium italic">Tidak ada jawaban tipe essay untuk siswa ini.</div>
                         @endforelse
 
                         <!-- Modal Footer / Submit Float -->

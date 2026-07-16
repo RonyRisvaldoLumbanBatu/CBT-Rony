@@ -1,7 +1,7 @@
 <div class="max-w-7xl mx-auto py-6 sm:py-8 px-4 sm:px-6 lg:px-8 select-none" 
-     x-data="{ 
-         warnings: 0, 
-         maxWarnings: 3,
+     x-data="{
+         warnings: @entangle('cheatStrikes'),
+         maxWarnings: {{ \App\Livewire\TakeExam::MAX_STRIKES }},
          showWarning: false,
          showSubmitConfirm: false,
          isFullscreen: @entangle('isFullscreen'),
@@ -29,26 +29,25 @@
                 alert('Tindakan menyalin tidak diizinkan!');
             });
             document.addEventListener('visibilitychange', () => {
-                if (document.hidden) this.triggerWarning('KELUAR DARI HALAMAN UJIAN');
+                if (document.hidden) this.triggerWarning('tab');
             });
             document.addEventListener('fullscreenchange', () => {
                 if (!document.fullscreenElement && this.isFullscreen) {
                     this.isFullscreen = false;
-                    this.triggerWarning('KELUAR DARI MODE LAYAR PENUH');
+                    this.triggerWarning('fullscreen');
                 }
             });
          },
 
-         triggerWarning(reason) {
+         triggerWarning(type) {
             if (this.showWarning) return;
-            this.warnings++;
             this.showWarning = true;
-            if (this.warnings >= this.maxWarnings) {
-                if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
-                $wire.submitExam();
-            } else {
-                $wire.logCheatStrike(this.warnings);
+            // Hitungan pelanggaran + auto-submit sepenuhnya diputuskan SERVER
+            // (refresh halaman tidak me-reset strike)
+            if (this.warnings + 1 >= this.maxWarnings && document.fullscreenElement && document.exitFullscreen) {
+                document.exitFullscreen().catch(() => {});
             }
+            $wire.registerViolation(type);
          }
      }">
 

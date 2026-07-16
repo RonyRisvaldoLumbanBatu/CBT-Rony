@@ -37,6 +37,7 @@ class TeacherDashboard extends Component
         ]);
 
         Exam::create([
+            'teacher_id' => auth()->id(),
             'title' => $this->title,
             'description' => $this->description,
             'time_limit' => $this->time_limit,
@@ -46,9 +47,18 @@ class TeacherDashboard extends Component
         session()->flash('sukses', 'Ujian baru berhasil dibuat!');
     }
 
-    public function editExam($id)
+    // Ambil ujian sekaligus pastikan miliknya guru yang sedang login
+    private function findOwnedExam($id): Exam
     {
         $exam = Exam::findOrFail($id);
+        abort_unless($exam->isOwnedBy(auth()->user()), 403, 'Ujian ini milik guru lain.');
+
+        return $exam;
+    }
+
+    public function editExam($id)
+    {
+        $exam = $this->findOwnedExam($id);
         $this->examIdToEdit = $exam->id;
         $this->title = $exam->title;
         $this->description = $exam->description;
@@ -64,7 +74,7 @@ class TeacherDashboard extends Component
             'time_limit' => 'required|numeric|min:1',
         ]);
 
-        $exam = Exam::findOrFail($this->examIdToEdit);
+        $exam = $this->findOwnedExam($this->examIdToEdit);
         $exam->update([
             'title' => $this->title,
             'description' => $this->description,
@@ -89,7 +99,7 @@ class TeacherDashboard extends Component
     public function executeDelete()
     {
         if ($this->examIdToDelete) {
-            Exam::findOrFail($this->examIdToDelete)->delete();
+            $this->findOwnedExam($this->examIdToDelete)->delete();
             session()->flash('sukses', 'Ujian berhasil dihapus permanen!');
         }
         $this->isDeleteModalOpen = false;
@@ -110,7 +120,7 @@ class TeacherDashboard extends Component
 
     public function toggleStatus($id)
     {
-        $exam = Exam::findOrFail($id);
+        $exam = $this->findOwnedExam($id);
         $newStatus = ! $exam->is_active;
 
         // Buat PIN dinamis (6 Karakter alphanumeric) saat Ujian diaktifkan
@@ -127,17 +137,17 @@ class TeacherDashboard extends Component
 
     public function render()
     {
-        // 1. Logika Pencarian Pintar
-        $query = Exam::query();
+        // 1. Logika Pencarian Pintar (hanya ujian milik guru ini)
+        $query = Exam::ownedBy(auth()->user());
         if (strlen($this->search) > 0) {
             $query->where('title', 'like', '%'.$this->search.'%');
         }
         $exams = $query->latest()->get();
 
-        // 2. Tarik Data Statistik
-        $totalUjian = Exam::count();
-        $ujianAktif = Exam::where('is_active', true)->count();
-        $totalSoal = Question::count(); // Menghitung total semua soal di database
+        // 2. Tarik Data Statistik (scoped ke ujian milik guru ini)
+        $totalUjian = Exam::ownedBy(auth()->user())->count();
+        $ujianAktif = Exam::ownedBy(auth()->user())->where('is_active', true)->count();
+        $totalSoal = Question::whereHas('exam', fn ($q) => $q->ownedBy(auth()->user()))->count();
 
         return view('livewire.teacher-dashboard', compact('exams', 'totalUjian', 'ujianAktif', 'totalSoal'));
     }

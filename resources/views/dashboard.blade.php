@@ -11,13 +11,13 @@
             
             @if(session('sukses'))
                 <div class="mb-6 bg-green-50 dark:bg-green-900/30 border-l-4 border-green-500 dark:border-green-400 p-4 shadow-sm rounded-r-lg flex items-center gap-3 transition-colors duration-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-green-600 dark:text-green-400"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                    <x-icon name="check-circle" stroke="1.5" class="w-6 h-6 text-green-600 dark:text-green-400" />
                     <span class="text-green-700 dark:text-green-400 font-medium">{{ session('sukses') }}</span>
                 </div>
             @endif
             @if(session('error'))
                 <div class="mb-6 bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 dark:border-red-400 p-4 shadow-sm rounded-r-lg flex items-center gap-3 transition-colors duration-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-red-600 dark:text-red-400"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    <x-icon name="warning-triangle" stroke="1.5" class="w-6 h-6 text-red-600 dark:text-red-400" />
                     <span class="text-red-700 dark:text-red-400 font-medium">{{ session('error') }}</span>
                 </div>
             @endif
@@ -78,9 +78,16 @@
                                             <td class="px-6 py-4 font-bold text-gray-800 dark:text-gray-200">{{ $riwayat->exam->title }}</td>
                                             <td class="px-6 py-4 text-gray-500 dark:text-gray-400">{{ $riwayat->created_at->format('d M Y, H:i') }} WIB</td>
                                             <td class="px-6 py-4 text-center">
-                                                <span class="inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-extrabold {{ $riwayat->score >= 70 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' }}">
-                                                    {{ $riwayat->score }}
-                                                </span>
+                                                @if($riwayat->exam->essay_count > 0 && !$riwayat->is_essay_graded)
+                                                    <span class="inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-extrabold bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400" title="Nilai sementara, essay belum dikoreksi guru">
+                                                        {{ $riwayat->score }}*
+                                                    </span>
+                                                    <span class="block mt-1 text-[10px] font-bold uppercase tracking-wide text-amber-600 dark:text-amber-400">Menunggu Penilaian Essay</span>
+                                                @else
+                                                    <span class="inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-extrabold {{ $riwayat->score >= 70 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' }}">
+                                                        {{ $riwayat->score }}
+                                                    </span>
+                                                @endif
                                             </td>
                                         </tr>
                                     @empty

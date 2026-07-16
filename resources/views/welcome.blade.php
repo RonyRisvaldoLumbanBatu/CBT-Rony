@@ -3,16 +3,17 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Portal Ujian CBT - Kampus Pintar</title>
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=poppins:400,500,600,700,800,900&display=swap" rel="stylesheet" />
+        <title>Portal Ujian CBT - Sekolah Pintar</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         <style>
             body { font-family: 'Poppins', sans-serif; }
+            /* Background lokal (tanpa gambar eksternal) supaya halaman tetap
+               tampil benar saat lab sekolah offline */
             .bg-portal {
-                background-image: url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');
-                background-size: cover;
-                background-position: center;
+                background:
+                    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(45, 212, 191, 0.25), transparent 60%),
+                    radial-gradient(ellipse 70% 60% at 85% 90%, rgba(99, 102, 241, 0.3), transparent 60%),
+                    linear-gradient(160deg, #0f172a 0%, #1e293b 55%, #134e4a 100%);
                 background-attachment: fixed;
             }
         </style>
@@ -26,7 +27,7 @@
             
             <div class="bg-white/10 dark:bg-slate-900/60 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-white/20 dark:border-slate-700/50 text-center transition-colors duration-300">
                 
-                <!-- Logo Kampus / Sistem -->
+                <!-- Logo Sekolah / Sistem -->
                 <div class="flex justify-center mb-6">
                     <div class="p-4 bg-teal-600 rounded-2xl shadow-lg shadow-teal-600/30">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-12 h-12 text-white">
@@ -39,7 +40,7 @@
                     Sistem Ujian CBT
                 </h1>
                 <p class="text-teal-100/80 mb-8 font-medium text-sm">
-                    Portal Evaluasi Akademik & Ujian Kampus
+                    Portal Evaluasi Akademik & Ujian Sekolah
                 </p>
 
                 <div class="space-y-4">
@@ -64,7 +65,7 @@
                         </div>
 
                         <a href="{{ route('register') }}" class="w-full flex justify-center items-center gap-2 py-3.5 px-4 border border-white/30 rounded-xl text-sm font-bold text-white hover:bg-white/10 transition active:scale-95">
-                            Pendaftaran Mahasiswa Baru
+                            Pendaftaran Siswa Baru
                         </a>
                     @endauth
                 </div>
@@ -72,7 +73,7 @@
             </div>
 
             <div class="mt-8 text-center text-sm text-slate-400">
-                &copy; {{ date('Y') }} Universitas Pintar Nusantara<br>
+                &copy; {{ date('Y') }} Sekolah Pintar Nusantara<br>
                 <span class="text-xs opacity-70">Tim IT & Pengembangan Akademik</span>
             </div>
 

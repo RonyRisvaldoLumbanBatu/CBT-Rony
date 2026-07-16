@@ -13,7 +13,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // 1. Buat 1 Akun Guru/Admin agar kita bisa login nanti
-        User::factory()->create([
+        $guru = User::factory()->create([
             'name' => 'Pak Guru IT',
             'email' => 'guru@ujian.com',
             'password' => bcrypt('password123'), // Ingat password ini ya!
@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
 
         // 2. Buat 1 Data Ujian
         $ujian = Exam::create([
+            'teacher_id' => $guru->id,
             'title' => 'Ujian Tengah Semester: Pemrograman Laravel 12',
             'description' => 'Ujian ini menguji pemahaman tentang MVC, Eloquent, dan Livewire.',
             'time_limit' => 60, // Waktu ujian 60 Menit

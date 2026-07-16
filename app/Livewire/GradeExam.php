@@ -27,6 +27,7 @@ class GradeExam extends Component
     public function mount($id)
     {
         $this->exam = Exam::with('questions.options')->findOrFail($id);
+        abort_unless($this->exam->isOwnedBy(auth()->user()), 403, 'Ujian ini milik guru lain.');
     }
 
     public function openGradeModal($resultId)

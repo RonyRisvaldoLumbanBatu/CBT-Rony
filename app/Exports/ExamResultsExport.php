@@ -33,8 +33,8 @@ class ExamResultsExport implements FromCollection, WithHeadings, WithMapping
     {
         return [
             'Peringkat',
-            'Nama Mahasiswa',
-            'NIM/Email',
+            'Nama Siswa',
+            'Email',
             'Nilai Akhir',
             'Waktu Pengumpulan',
         ];

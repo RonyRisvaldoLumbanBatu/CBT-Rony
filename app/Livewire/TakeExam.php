@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Exam;
 use App\Models\Result;
 use App\Services\ExamGrader;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -13,6 +14,9 @@ class TakeExam extends Component
 {
     // Toleransi keterlambatan submit (detik) untuk latensi jaringan
     private const SUBMIT_GRACE_SECONDS = 30;
+
+    // Batas pelanggaran (keluar tab/fullscreen) sebelum ujian disubmit paksa
+    public const MAX_STRIKES = 3;
 
     public Exam $exam;
 
@@ -35,12 +39,29 @@ class TakeExam extends Component
     // Menyimpan daftar ID soal yang ditandai ragu-ragu
     public $doubtfulQuestions = [];
 
+    // Jumlah pelanggaran, sumber kebenarannya di SESSION (bukan di browser),
+    // supaya refresh halaman tidak me-reset hitungan
+    public $cheatStrikes = 0;
+
     public function verifyPin()
     {
+        // Rate limit: maksimal 5 percobaan per menit per siswa per ujian
+        // (PIN 6 karakter bisa di-brute-force tanpa ini)
+        $rateKey = 'verify-pin:'.auth()->id().':'.$this->exam->id;
+
+        if (RateLimiter::tooManyAttempts($rateKey, 5)) {
+            $detik = RateLimiter::availableIn($rateKey);
+            session()->flash('pin_error', "Terlalu banyak percobaan. Coba lagi dalam {$detik} detik.");
+
+            return;
+        }
+
         if (strtoupper($this->inputPin) === strtoupper($this->exam->token)) {
+            RateLimiter::clear($rateKey);
             $this->isPinVerified = true;
             session()->put('pin_verified_'.$this->exam->id, true);
         } else {
+            RateLimiter::hit($rateKey, 60);
             session()->flash('pin_error', 'PIN ujian tidak valid atau salah!');
         }
     }
@@ -128,6 +149,9 @@ class TakeExam extends Component
             session()->put($sessionKeyDoubtful, $this->doubtfulQuestions);
             session()->put($sessionKeyIndex, $this->currentQuestionIndex);
         }
+
+        // Restore hitungan pelanggaran (refresh halaman tidak me-reset strike)
+        $this->cheatStrikes = session()->get('ujian_strikes_'.$this->exam->id, 0);
 
         // 4. TIMER ANTI-CHEAT MENGGUNAKAN SESSION
         $kunciSession = 'ujian_selesai_'.$this->exam->id;
@@ -282,6 +306,7 @@ class TakeExam extends Component
             'ujian_answers_'.$this->exam->id,
             'ujian_doubtful_'.$this->exam->id,
             'ujian_index_'.$this->exam->id,
+            'ujian_strikes_'.$this->exam->id,
             'pin_verified_'.$this->exam->id,
         ]);
         session()->flash('sukses', 'Ujian selesai! Nilai kamu: '.$nilaiBulat);
@@ -289,14 +314,28 @@ class TakeExam extends Component
         return redirect()->route('dashboard');
     }
 
-    public function logCheatStrike($strikeCount)
+    public function registerViolation($type = 'tab')
     {
+        // Hitungan pelanggaran dinaikkan dan disimpan di SERVER,
+        // jadi refresh halaman tidak memberi "nyawa baru"
+        $reason = $type === 'fullscreen'
+            ? 'Keluar dari Mode Layar Penuh'
+            : 'Keluar dari Layar Ujian';
+
+        $key = 'ujian_strikes_'.$this->exam->id;
+        $this->cheatStrikes = session()->get($key, 0) + 1;
+        session()->put($key, $this->cheatStrikes);
+
         // Broadcast peringatan ke radar guru
         event(new \App\Events\StudentExamUpdate(
             $this->exam->id,
             auth()->user()->name,
-            '⚠️ PELANGGARAN #'.$strikeCount.' - Keluar dari Layar Ujian!'
+            '⚠️ PELANGGARAN #'.$this->cheatStrikes.' - '.$reason.'!'
         ));
+
+        if ($this->cheatStrikes >= self::MAX_STRIKES) {
+            return $this->submitExam();
+        }
     }
 
     public function render()

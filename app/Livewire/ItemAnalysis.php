@@ -19,6 +19,7 @@ class ItemAnalysis extends Component
     public function mount($id, ExamGrader $grader)
     {
         $this->exam = Exam::with(['questions.options', 'results'])->findOrFail($id);
+        abort_unless($this->exam->isOwnedBy(auth()->user()), 403, 'Ujian ini milik guru lain.');
         $this->calculateAnalysis($grader);
     }
 

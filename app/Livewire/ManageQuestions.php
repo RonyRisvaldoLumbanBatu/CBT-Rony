@@ -60,6 +60,7 @@ class ManageQuestions extends Component
     public function mount($id)
     {
         $this->exam = Exam::findOrFail($id);
+        abort_unless($this->exam->isOwnedBy(auth()->user()), 403, 'Ujian ini milik guru lain.');
     }
 
     // === FITUR DOWNLOAD TEMPLATE ===

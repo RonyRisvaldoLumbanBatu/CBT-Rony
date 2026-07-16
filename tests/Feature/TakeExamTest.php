@@ -95,4 +95,50 @@ class TakeExamTest extends TestCase
             ->where('exam_id', $this->exam->id)
             ->count());
     }
+
+    public function test_pelanggaran_ketiga_memaksa_submit_ujian(): void
+    {
+        $component = Livewire::actingAs($this->siswa)
+            ->test(\App\Livewire\TakeExam::class, ['id' => $this->exam->id]);
+
+        $component->call('registerViolation', 'tab');
+        $component->call('registerViolation', 'fullscreen');
+        $this->assertDatabaseMissing('results', ['user_id' => $this->siswa->id]);
+
+        $component->call('registerViolation', 'tab'); // strike ke-3 -> submit paksa
+
+        $this->assertDatabaseHas('results', [
+            'user_id' => $this->siswa->id,
+            'exam_id' => $this->exam->id,
+        ]);
+    }
+
+    public function test_hitungan_pelanggaran_tidak_reset_saat_refresh(): void
+    {
+        Livewire::actingAs($this->siswa)
+            ->test(\App\Livewire\TakeExam::class, ['id' => $this->exam->id])
+            ->call('registerViolation', 'tab')
+            ->call('registerViolation', 'tab');
+
+        // Simulasi refresh: komponen di-mount ulang, strike harus tetap 2
+        Livewire::actingAs($this->siswa)
+            ->test(\App\Livewire\TakeExam::class, ['id' => $this->exam->id])
+            ->assertSet('cheatStrikes', 2);
+    }
+
+    public function test_pin_dibatasi_lima_percobaan_per_menit(): void
+    {
+        $this->exam->update(['token' => 'ABC123']);
+
+        $component = Livewire::actingAs($this->siswa)
+            ->test(\App\Livewire\TakeExam::class, ['id' => $this->exam->id]);
+
+        foreach (range(1, 5) as $i) {
+            $component->set('inputPin', 'SALAH'.$i)->call('verifyPin');
+        }
+
+        // Percobaan ke-6 harus diblokir rate limiter, bahkan dengan PIN yang BENAR
+        $component->set('inputPin', 'ABC123')->call('verifyPin');
+        $component->assertSet('isPinVerified', false);
+    }
 }
