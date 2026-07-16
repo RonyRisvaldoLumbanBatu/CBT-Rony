@@ -36,7 +36,7 @@
 
         <div class="lg:col-span-1 space-y-4">
             <div
-                class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 h-fit sticky top-10 transition-colors duration-300">
+                class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 h-fit lg:sticky lg:top-10 transition-colors duration-300">
                 <div class="flex items-center gap-2 mb-4 border-b border-gray-100 dark:border-gray-700 pb-4">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="w-6 h-6 text-emerald-500 dark:text-emerald-400">

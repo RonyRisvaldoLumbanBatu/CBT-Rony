@@ -72,6 +72,7 @@
                         </h3>
                         
                         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors duration-300">
+                            <div class="overflow-x-auto">
                             <table class="w-full text-left text-sm text-gray-500 dark:text-gray-400">
                                 <thead class="bg-gray-50/80 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 text-xs uppercase text-gray-700 dark:text-gray-300 font-bold">
                                     <tr>
@@ -84,7 +85,7 @@
                                     @forelse($riwayatNilai as $riwayat)
                                         <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition duration-200">
                                             <td class="px-6 py-4 font-bold text-gray-800 dark:text-gray-200">{{ $riwayat->exam->title }}</td>
-                                            <td class="px-6 py-4 text-gray-500 dark:text-gray-400">{{ $riwayat->created_at->format('d M Y, H:i') }} WIB</td>
+                                            <td class="px-6 py-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ $riwayat->created_at->format('d M Y, H:i') }} WIB</td>
                                             <td class="px-6 py-4 text-center">
                                                 @if($riwayat->exam->essay_count > 0 && !$riwayat->is_essay_graded)
                                                     <span class="inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-extrabold bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400" title="Nilai sementara, essay belum dikoreksi guru">
@@ -105,13 +106,14 @@
                                     @endforelse
                                 </tbody>
                             </table>
+                            </div>
                         </div>
                     </div>
 
                 </div>
 
                 <div class="lg:col-span-1">
-                    <div class="bg-gradient-to-br from-amber-400 to-orange-500 dark:from-amber-600 dark:to-orange-700 rounded-xl shadow-md p-1 mb-6 h-fit sticky top-8 transition-colors duration-300">
+                    <div class="bg-gradient-to-br from-amber-400 to-orange-500 dark:from-amber-600 dark:to-orange-700 rounded-xl shadow-md p-1 mb-6 h-fit lg:sticky lg:top-8 transition-colors duration-300">
                         <div class="bg-white dark:bg-gray-800 rounded-lg p-5 h-full transition-colors duration-300">
                             
                             <div class="flex items-center gap-3 mb-6 border-b border-gray-100 dark:border-gray-700 pb-4">

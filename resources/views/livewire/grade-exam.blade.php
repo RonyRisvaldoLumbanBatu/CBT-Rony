@@ -77,7 +77,7 @@
 
     <!-- Modal Penilaian Manual -->
     @if($isModalOpen && $selectedResult)
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-gray-900/80 backdrop-blur-sm p-4 sm:p-6 p-4 overflow-y-auto">
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-gray-900/80 backdrop-blur-sm p-4 sm:p-6 overflow-y-auto">
             <div class="bg-white dark:bg-gray-800 w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-xl flex flex-col relative border border-gray-100 dark:border-gray-700">
                 
                 <!-- Modal Header -->

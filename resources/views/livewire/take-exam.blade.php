@@ -235,7 +235,7 @@
 
                 <!-- KOLOM KANAN (PETA SOAL) -->
                 <div class="lg:col-span-1">
-                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 sticky top-6">
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 lg:sticky lg:top-6">
                         <h3 class="font-bold text-gray-900 dark:text-white mb-4 border-b border-gray-100 dark:border-gray-700 pb-2">Navigasi Soal</h3>
                         
                         <div class="grid grid-cols-5 sm:grid-cols-8 lg:grid-cols-4 gap-2 mb-6">
