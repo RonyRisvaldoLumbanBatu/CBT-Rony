@@ -22,7 +22,16 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'classroom_id',
     ];
+
+    /**
+     * Relasi: kelas tempat siswa/mahasiswa ini terdaftar.
+     */
+    public function classroom()
+    {
+        return $this->belongsTo(Classroom::class);
+    }
 
     /**
      * The attributes that should be hidden for serialization.

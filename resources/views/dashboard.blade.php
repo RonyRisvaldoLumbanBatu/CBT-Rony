@@ -2,12 +2,15 @@
     <x-slot name="header">
         <h2 class="font-bold text-xl text-gray-800 dark:text-white leading-tight flex items-center gap-2 transition-colors duration-300">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 text-indigo-600 dark:text-indigo-400"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" /></svg>
-            Dasbor Siswa
+            Dasbor {{ term('siswa') }}
+            @if(auth()->user()->classroom)
+                <span class="text-xs font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 px-2.5 py-1 rounded-full">{{ auth()->user()->classroom->name }}</span>
+            @endif
         </h2>
     </x-slot>
 
     <div class="py-8">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
             @if(session('sukses'))
                 <div class="mb-6 bg-green-50 dark:bg-green-900/30 border-l-4 border-green-500 dark:border-green-400 p-4 shadow-sm rounded-r-lg flex items-center gap-3 transition-colors duration-300">
@@ -38,11 +41,16 @@
                                     <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-400 transition">{{ $ujian->title }}</h4>
                                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-4 flex-grow">{{ $ujian->description ?? 'Tidak ada deskripsi.' }}</p>
                                     
-                                    <div class="flex justify-between items-center mt-auto pt-4 border-t border-gray-50 dark:border-gray-700">
-                                        <span class="flex items-center gap-1.5 text-xs font-bold bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 px-3 py-1.5 rounded-lg border border-indigo-100 dark:border-indigo-800">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                                            {{ $ujian->time_limit }} Menit
-                                        </span>
+                                    <div class="flex flex-wrap justify-between items-center gap-2 mt-auto pt-4 border-t border-gray-50 dark:border-gray-700">
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <span class="flex items-center gap-1.5 text-xs font-bold bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 px-3 py-1.5 rounded-lg border border-indigo-100 dark:border-indigo-800">
+                                                <x-icon name="clock" class="w-4 h-4" />
+                                                {{ $ujian->time_limit }} Menit
+                                            </span>
+                                            <span class="flex items-center gap-1.5 text-xs font-bold bg-gray-50 dark:bg-gray-700/60 text-gray-500 dark:text-gray-300 px-3 py-1.5 rounded-lg border border-gray-100 dark:border-gray-600">
+                                                {{ $ujian->classroom?->name ?? 'Semua '.term('kelas') }}
+                                            </span>
+                                        </div>
                                         <a href="/ujian/{{ $ujian->id }}" class="bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 dark:hover:bg-indigo-600 transition shadow-sm flex items-center gap-1">
                                             Mulai <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
                                         </a>
@@ -129,7 +137,10 @@
                                                     <span class="ml-1 text-[10px] bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.5 rounded uppercase font-extrabold tracking-wider">Kamu</span>
                                                 @endif
                                             </p>
-                                            <p class="text-[11px] text-gray-500 dark:text-gray-400 truncate">{{ $rank->exam->title }}</p>
+                                            <p class="text-[11px] text-gray-500 dark:text-gray-400 truncate">
+                                                @if($rank->user->classroom)<span class="font-bold">{{ $rank->user->classroom->name }}</span> &middot;@endif
+                                                {{ $rank->exam->title }}
+                                            </p>
                                         </div>
                                         
                                         <div class="text-right">

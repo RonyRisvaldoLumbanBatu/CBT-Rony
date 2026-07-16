@@ -23,7 +23,7 @@ class ExportController extends Controller
         abort_unless($exam->isOwnedBy(auth()->user()), 403, 'Ujian ini milik guru lain.');
 
         // 2. Tarik semua nilai siswa untuk ujian ini, urutkan dari nilai tertinggi
-        $results = Result::with('user')
+        $results = Result::with('user.classroom')
             ->where('exam_id', $examId)
             ->orderByDesc('score')
             ->get();

@@ -1,15 +1,15 @@
-<div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8 transition-colors duration-300">
-    <div class="flex justify-between items-center mb-6">
+<div class="max-w-7xl mx-auto py-6 sm:py-10 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
         <div>
-            <h2 class="text-2xl font-extrabold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+            <h2 class="text-xl sm:text-2xl font-extrabold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7 text-indigo-500">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
                 </svg>
                 Penilaian Essay: {{ $exam->title }}
             </h2>
-            <p class="text-gray-500 dark:text-gray-400 mt-1 ml-9">Kelola dan berikan skor untuk jawaban uraian siswa di sini.</p>
+            <p class="text-gray-500 dark:text-gray-400 mt-1 ml-9">Kelola dan berikan skor untuk jawaban uraian {{ strtolower(term('siswa')) }} di sini.</p>
         </div>
-        <a href="/guru/ujian" class="flex items-center gap-2 px-5 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition shadow-sm">
+        <a href="/guru/ujian" class="self-start sm:self-auto flex items-center gap-2 px-5 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition shadow-sm">
             &laquo; Kembali
         </a>
     </div>
@@ -26,7 +26,7 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-gray-50 dark:bg-gray-900/50 text-gray-600 dark:text-gray-300 text-sm uppercase tracking-wider">
-                        <th class="py-4 px-6 font-bold border-b dark:border-gray-700">Siswa</th>
+                        <th class="py-4 px-6 font-bold border-b dark:border-gray-700">{{ term('siswa') }}</th>
                         <th class="py-4 px-6 font-bold border-b dark:border-gray-700 text-center">Email</th>
                         <th class="py-4 px-6 font-bold border-b dark:border-gray-700 text-center">Skor Akhir / Status</th>
                         <th class="py-4 px-6 font-bold border-b dark:border-gray-700 text-center">Aksi Penilaian</th>
@@ -35,7 +35,12 @@
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-700 text-gray-800 dark:text-gray-200">
                     @forelse($results as $r)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
-                            <td class="py-4 px-6 font-bold">{{ $r->user->name }}</td>
+                            <td class="py-4 px-6">
+                                <span class="font-bold block">{{ $r->user->name }}</span>
+                                @if($r->user->classroom)
+                                    <span class="text-[11px] font-bold text-indigo-500 dark:text-indigo-400">{{ $r->user->classroom->name }}</span>
+                                @endif
+                            </td>
                             <td class="py-4 px-6 text-center text-sm">{{ $r->user->email }}</td>
                             <td class="py-4 px-6 text-center">
                                 <span class="text-2xl font-black {{ $r->score >= 60 ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400' }}">
@@ -62,7 +67,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="py-12 text-center text-gray-500 dark:text-gray-400 italic">Belum ada siswa yang mengumpulkan ujian ini.</td>
+                            <td colspan="4" class="py-12 text-center text-gray-500 dark:text-gray-400 italic">Belum ada {{ strtolower(term('siswa')) }} yang mengumpulkan ujian ini.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -78,7 +83,7 @@
                 <!-- Modal Header -->
                 <div class="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700 sticky top-0 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-t-2xl z-10">
                     <div>
-                        <h3 class="text-xl font-extrabold text-gray-800 dark:text-gray-100">Penilaian Essay Siswa</h3>
+                        <h3 class="text-xl font-extrabold text-gray-800 dark:text-gray-100">Penilaian Essay {{ term('siswa') }}</h3>
                         <p class="text-sm font-bold text-indigo-600 dark:text-indigo-400 mt-1">{{ $selectedResult->user->name }} - {{ $selectedResult->user->email }}</p>
                     </div>
                     <button wire:click="closeModal" class="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg transition" title="Tutup">
@@ -106,14 +111,14 @@
                                     </div>
                                 </div>
                                 <div class="p-5 bg-transparent">
-                                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Jawaban Siswa:</label>
+                                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Jawaban {{ term('siswa') }}:</label>
                                     <div class="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 font-medium whitespace-pre-wrap leading-relaxed shadow-sm">
                                         {{ $essayAnswers[$q->id] }}
                                     </div>
                                 </div>
                             </div>
                         @empty
-                            <div class="text-center py-10 text-gray-500 dark:text-gray-400 font-medium italic">Tidak ada jawaban tipe essay untuk siswa ini.</div>
+                            <div class="text-center py-10 text-gray-500 dark:text-gray-400 font-medium italic">Tidak ada jawaban tipe essay untuk {{ strtolower(term('siswa')) }} ini.</div>
                         @endforelse
 
                         <!-- Modal Footer / Submit Float -->

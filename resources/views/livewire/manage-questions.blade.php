@@ -1,6 +1,6 @@
-<div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8 relative transition-colors duration-300">
+<div class="max-w-7xl mx-auto py-6 sm:py-10 px-4 sm:px-6 lg:px-8 relative transition-colors duration-300">
 
-    <div class="mb-8 flex items-center justify-between">
+    <div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div class="flex items-center gap-4">
             <a href="{{ route('dashboard') }}"
                 class="p-2 bg-white dark:bg-gray-800 text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 transition">

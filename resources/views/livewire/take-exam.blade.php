@@ -134,7 +134,7 @@
             <div class="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div class="text-center sm:text-left">
                     <h2 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">{{ $exam->title }}</h2>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Siswa: <span class="font-bold">{{ auth()->user()->name }}</span></p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ term('siswa') }}: <span class="font-bold">{{ auth()->user()->name }}</span></p>
                 </div>
 
                 <div x-data="{ timeLeft: @entangle('timeLeft'), init() { setInterval(() => { if(this.timeLeft > 0) this.timeLeft--; else if(this.timeLeft === 0) $wire.submitExam(); }, 1000) }, formatTime(s) { let m=Math.floor(s/60); let sec=s%60; return m+':'+sec.toString().padStart(2,'0') } }" 

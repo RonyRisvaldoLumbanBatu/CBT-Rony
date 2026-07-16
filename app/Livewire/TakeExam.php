@@ -84,7 +84,21 @@ class TakeExam extends Component
 
         // Tolak akses langsung via URL ke ujian yang belum diaktifkan guru
         if (! $this->exam->is_active) {
-            session()->flash('error', 'Ujian ini belum dibuka. Hubungi gurumu!');
+            session()->flash('error', 'Ujian ini belum dibuka. Hubungi '.strtolower(term('guru')).'mu!');
+
+            return redirect()->route('dashboard');
+        }
+
+        // Tolak siswa dari kelas lain (ujian ber-target kelas tertentu)
+        if (! $this->exam->isOpenFor(auth()->user())) {
+            session()->flash('error', 'Ujian ini bukan untuk '.strtolower(term('kelas')).'mu.');
+
+            return redirect()->route('dashboard');
+        }
+
+        // Ujian tanpa soal tidak bisa dikerjakan (view mengasumsikan minimal 1 soal)
+        if ($this->exam->questions->isEmpty()) {
+            session()->flash('error', 'Ujian ini belum memiliki soal. Hubungi '.strtolower(term('guru')).'mu!');
 
             return redirect()->route('dashboard');
         }

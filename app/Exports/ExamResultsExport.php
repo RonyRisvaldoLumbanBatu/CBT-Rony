@@ -23,7 +23,7 @@ class ExamResultsExport implements FromCollection, WithHeadings, WithMapping
      */
     public function collection()
     {
-        return Result::with('user')
+        return Result::with('user.classroom')
             ->where('exam_id', $this->examId)
             ->orderByDesc('score')
             ->get();
@@ -33,8 +33,9 @@ class ExamResultsExport implements FromCollection, WithHeadings, WithMapping
     {
         return [
             'Peringkat',
-            'Nama Siswa',
+            'Nama '.term('siswa'),
             'Email',
+            term('kelas'),
             'Nilai Akhir',
             'Waktu Pengumpulan',
         ];
@@ -46,6 +47,7 @@ class ExamResultsExport implements FromCollection, WithHeadings, WithMapping
             $this->rank++,
             $result->user->name,
             $result->user->email,
+            $result->user->classroom?->name ?? '-',
             $result->score,
             $result->created_at->timezone('Asia/Jakarta')->format('d/m/Y H:i:s'),
         ];

@@ -83,7 +83,7 @@ class GradeExam extends Component
     public function render()
     {
         // Panggil hanya results ujian ini
-        $results = Result::with('user')->where('exam_id', $this->exam->id)->latest()->get();
+        $results = Result::with('user.classroom')->where('exam_id', $this->exam->id)->latest()->get();
         // Cek total soal essay
         $hasEssay = $this->exam->questions->where('type', 'essay')->count() > 0;
 

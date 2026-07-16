@@ -1,7 +1,7 @@
-<div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8 transition-colors duration-300">
-    <div class="flex justify-between items-center mb-8">
+<div class="max-w-7xl mx-auto py-6 sm:py-10 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
         <div>
-            <h2 class="text-2xl font-extrabold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+            <h2 class="text-xl sm:text-2xl font-extrabold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                     stroke="currentColor" class="w-8 h-8 text-indigo-500">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z"></path>
@@ -16,7 +16,7 @@
                     Ujian</span>.</p>
         </div>
         <a href="/guru/ujian"
-            class="flex items-center gap-2 px-5 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition shadow-sm">
+            class="self-start sm:self-auto flex items-center gap-2 px-5 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition shadow-sm">
             &laquo; Kembali
         </a>
     </div>
@@ -30,7 +30,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round"
                     d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
             </svg>
-            <h3 class="text-xl font-bold text-indigo-900 dark:text-indigo-200 mb-2">Belum Ada Siswa yang Menyelesaikan
+            <h3 class="text-xl font-bold text-indigo-900 dark:text-indigo-200 mb-2">Belum Ada {{ term('siswa') }} yang Menyelesaikan
                 Ujian</h3>
             <p class="text-indigo-700 dark:text-indigo-400 text-center max-w-sm">
                 Analisis tingkat kesukaran soal memerlukan minimal 1 Peserta yang telah mengumpulkan ujiannya terlebih

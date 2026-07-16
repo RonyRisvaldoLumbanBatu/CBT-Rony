@@ -1,4 +1,4 @@
-<div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8 transition-colors duration-300">
+<div class="max-w-7xl mx-auto py-6 sm:py-10 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div
@@ -99,6 +99,21 @@
                     @error('time_limit') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                 </div>
 
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Untuk {{ term('kelas') }}</label>
+                    <select wire:model="classroom_id"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition">
+                        <option value="">Semua {{ term('kelas') }}</option>
+                        @foreach($classrooms as $classroom)
+                            <option value="{{ $classroom->id }}">{{ $classroom->name }}</option>
+                        @endforeach
+                    </select>
+                    @if($classrooms->isEmpty())
+                        <p class="text-xs text-gray-400 mt-1">Belum ada {{ strtolower(term('kelas')) }}. <a href="{{ route('guru.kelas') }}" class="text-indigo-500 font-bold hover:underline">Buat dulu di sini</a>.</p>
+                    @endif
+                    @error('classroom_id') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                </div>
+
                 <div class="flex gap-3 pt-2">
                     @if($isEditMode)
                         <button type="button" wire:click="cancelEdit"
@@ -182,6 +197,11 @@
                                     class="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 px-3 py-1.5 rounded-full">
                                     <x-icon name="clock" stroke="1.5" class="w-4 h-4 text-gray-400 dark:text-gray-500" />
                                     {{ $exam->time_limit }} Menit
+                                </span>
+                                <span
+                                    class="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 px-3 py-1.5 rounded-full">
+                                    <x-icon name="database" stroke="1.5" class="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                                    {{ $exam->classroom?->name ?? 'Semua '.term('kelas') }}
                                 </span>
                                 <span
                                     class="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 px-3 py-1.5 rounded-full">

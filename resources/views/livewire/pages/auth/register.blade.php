@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Classroom;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
@@ -11,19 +12,32 @@ use Livewire\Volt\Component;
 new #[Layout('layouts.guest')] class extends Component {
     public string $name = '';
     public string $email = '';
+    public string $classroom_id = '';
     public string $password = '';
     public string $password_confirmation = '';
+
+    public function with(): array
+    {
+        return ['classrooms' => Classroom::orderBy('name')->get()];
+    }
 
     /**
      * Handle an incoming registration request.
      */
     public function register(): void
     {
-        $validated = $this->validate([
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
-        ]);
+        ];
+
+        // Kelas wajib dipilih jika guru sudah membuat data kelas
+        if (Classroom::exists()) {
+            $rules['classroom_id'] = ['required', 'exists:classrooms,id'];
+        }
+
+        $validated = $this->validate($rules);
 
         $validated['password'] = Hash::make($validated['password']);
 
@@ -86,6 +100,20 @@ new #[Layout('layouts.guest')] class extends Component {
             class="text-red-500 dark:text-red-400 text-xs mt-1 block font-medium">{{ $message }}</span> @enderror
         </div>
 
+        @if($classrooms->isNotEmpty())
+            <div>
+                <label for="classroom_id" class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">{{ term('kelas') }}</label>
+                <select wire:model="classroom_id" id="classroom_id" required
+                    class="block w-full px-3 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500 dark:focus:ring-teal-400 focus:border-teal-500 transition sm:text-sm">
+                    <option value="">-- Pilih {{ term('kelas') }} --</option>
+                    @foreach($classrooms as $classroom)
+                        <option value="{{ $classroom->id }}">{{ $classroom->name }}</option>
+                    @endforeach
+                </select>
+                @error('classroom_id') <span
+                class="text-red-500 dark:text-red-400 text-xs mt-1 block font-medium">{{ $message }}</span> @enderror
+            </div>
+        @endif
 
         <div>
             <label for="password"

@@ -12,6 +12,10 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // 0. Buat data kelas contoh
+        $kelasA = \App\Models\Classroom::create(['name' => 'XII IPA 1']);
+        \App\Models\Classroom::create(['name' => 'XII IPA 2']);
+
         // 1. Buat 1 Akun Guru/Admin agar kita bisa login nanti
         $guru = User::factory()->create([
             'name' => 'Pak Guru IT',
@@ -20,7 +24,16 @@ class DatabaseSeeder extends Seeder
             'role' => 'guru',
         ]);
 
-        // 2. Buat 1 Data Ujian
+        // 1b. Akun siswa contoh, tergabung di kelas pertama
+        User::factory()->create([
+            'name' => 'Siswa Test',
+            'email' => 'siswa@test.com',
+            'password' => bcrypt('password123'),
+            'role' => 'siswa',
+            'classroom_id' => $kelasA->id,
+        ]);
+
+        // 2. Buat 1 Data Ujian (tanpa target kelas = terbuka untuk semua)
         $ujian = Exam::create([
             'teacher_id' => $guru->id,
             'title' => 'Ujian Tengah Semester: Pemrograman Laravel 12',

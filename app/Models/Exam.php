@@ -16,6 +16,7 @@ class Exam extends Model
      */
     protected $fillable = [
         'teacher_id',
+        'classroom_id',
         'title',
         'description',
         'time_limit',
@@ -39,6 +40,32 @@ class Exam extends Model
     public function teacher(): BelongsTo
     {
         return $this->belongsTo(User::class, 'teacher_id');
+    }
+
+    /**
+     * Relasi: Ujian ini ditargetkan ke kelas mana? (null = semua kelas)
+     */
+    public function classroom(): BelongsTo
+    {
+        return $this->belongsTo(Classroom::class);
+    }
+
+    /**
+     * Apakah siswa ini boleh mengikuti ujian?
+     * Ujian tanpa kelas (null) terbuka untuk semua siswa.
+     */
+    public function isOpenFor(User $student): bool
+    {
+        return $this->classroom_id === null || $this->classroom_id === $student->classroom_id;
+    }
+
+    /**
+     * Scope: ujian yang terlihat oleh siswa tertentu (sesuai kelasnya).
+     */
+    public function scopeVisibleTo(Builder $query, User $student): Builder
+    {
+        return $query->where(fn ($q) => $q->whereNull('classroom_id')
+            ->orWhere('classroom_id', $student->classroom_id));
     }
 
     /**

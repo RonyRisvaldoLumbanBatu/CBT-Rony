@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Portal Ujian CBT - Sekolah Pintar</title>
+        <title>Portal Ujian CBT - {{ term('sekolah') }} Pintar</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         <style>
             body { font-family: 'Poppins', sans-serif; }
@@ -40,7 +40,7 @@
                     Sistem Ujian CBT
                 </h1>
                 <p class="text-teal-100/80 mb-8 font-medium text-sm">
-                    Portal Evaluasi Akademik & Ujian Sekolah
+                    Portal Evaluasi Akademik &amp; Ujian {{ term('sekolah') }}
                 </p>
 
                 <div class="space-y-4">
@@ -65,7 +65,7 @@
                         </div>
 
                         <a href="{{ route('register') }}" class="w-full flex justify-center items-center gap-2 py-3.5 px-4 border border-white/30 rounded-xl text-sm font-bold text-white hover:bg-white/10 transition active:scale-95">
-                            Pendaftaran Siswa Baru
+                            Pendaftaran {{ term('siswa') }} Baru
                         </a>
                     @endauth
                 </div>
@@ -73,7 +73,7 @@
             </div>
 
             <div class="mt-8 text-center text-sm text-slate-400">
-                &copy; {{ date('Y') }} Sekolah Pintar Nusantara<br>
+                &copy; {{ date('Y') }} {{ term('sekolah') }} Pintar Nusantara<br>
                 <span class="text-xs opacity-70">Tim IT & Pengembangan Akademik</span>
             </div>
 

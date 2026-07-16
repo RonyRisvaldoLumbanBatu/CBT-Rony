@@ -31,9 +31,10 @@
         <thead>
             <tr>
                 <th style="width: 5%; text-align: center;">No</th>
-                <th style="width: 40%;">Nama Siswa</th>
-                <th style="width: 30%;">Waktu Pengumpulan</th>
-                <th style="width: 25%; text-align: center;">Nilai Akhir</th>
+                <th style="width: 35%;">Nama {{ term('siswa') }}</th>
+                <th style="width: 15%;">{{ term('kelas') }}</th>
+                <th style="width: 25%;">Waktu Pengumpulan</th>
+                <th style="width: 20%; text-align: center;">Nilai Akhir</th>
             </tr>
         </thead>
         <tbody>
@@ -41,12 +42,13 @@
                 <tr>
                     <td style="text-align: center;">{{ $index + 1 }}</td>
                     <td>{{ $result->user->name }}</td>
+                    <td>{{ $result->user->classroom?->name ?? '-' }}</td>
                     <td>{{ $result->created_at->format('d/m/Y H:i') }}</td>
                     <td class="score">{{ $result->score }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="4" style="text-align: center; color: #999;">Belum ada siswa yang mengerjakan ujian ini.</td>
+                    <td colspan="5" style="text-align: center; color: #999;">Belum ada {{ strtolower(term('siswa')) }} yang mengerjakan ujian ini.</td>
                 </tr>
             @endforelse
         </tbody>

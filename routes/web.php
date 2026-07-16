@@ -25,10 +25,13 @@ Route::get('/siswa/dashboard', function () {
         $query->withCount(['questions as essay_count' => fn ($q) => $q->where('type', 'essay')]);
     }])->where('user_id', auth()->id())->latest()->get();
 
-    $ujianTersedia = \App\Models\Exam::where('is_active', true)
+    // Hanya ujian untuk kelas siswa ini (atau ujian umum tanpa target kelas)
+    $ujianTersedia = \App\Models\Exam::with('classroom')
+        ->where('is_active', true)
+        ->visibleTo(auth()->user())
         ->whereNotIn('id', $riwayatNilai->pluck('exam_id'))->get();
 
-    $leaderboard = \App\Models\Result::with(['user', 'exam'])
+    $leaderboard = \App\Models\Result::with(['user.classroom', 'exam'])
         ->orderByDesc('score')->orderBy('created_at')->take(10)->get();
 
     return view('dashboard', compact('riwayatNilai', 'ujianTersedia', 'leaderboard'));
@@ -49,6 +52,11 @@ Route::get('/pengawas/{id}', \App\Livewire\ProctorDashboard::class)
 
 // Panel Admin Khusus Guru
 Route::get('/guru/ujian', \App\Livewire\TeacherDashboard::class)->middleware(['auth', 'role:guru']);
+
+// Kelola Kelas & Mode Aplikasi (Khusus Guru)
+Route::get('/guru/kelas', \App\Livewire\ManageClassrooms::class)
+    ->middleware(['auth', 'role:guru'])
+    ->name('guru.kelas');
 
 // Halaman untuk kelola soal (Khusus Guru)
 Route::get('/guru/ujian/{id}/soal', \App\Livewire\ManageQuestions::class)->middleware(['auth', 'role:guru']);

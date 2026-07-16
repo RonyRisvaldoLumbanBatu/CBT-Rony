@@ -1,4 +1,4 @@
-<div class="max-w-6xl mx-auto py-10 sm:px-6 lg:px-8 transition-colors duration-300">
+<div class="max-w-6xl mx-auto py-6 sm:py-10 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
     
     <a href="/guru/ujian" class="inline-flex items-center gap-2 text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 font-semibold mb-6 transition group">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 group-hover:-translate-x-1 transition-transform">

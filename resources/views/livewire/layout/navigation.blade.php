@@ -38,7 +38,11 @@ new class extends Component {
                     @if(auth()->user()->role === 'guru')
                         <x-nav-link :href="route('guru.dashboard')" :active="request()->routeIs('guru.dashboard')"
                             class="font-bold text-base mt-1 text-gray-600 dark:text-gray-300">
-                            Dasbor Guru
+                            Dasbor {{ term('guru') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('guru.kelas')" :active="request()->routeIs('guru.kelas')"
+                            class="font-bold text-base mt-1 text-gray-600 dark:text-gray-300">
+                            Kelola {{ term('kelas') }}
                         </x-nav-link>
                     @else
                         <x-nav-link :href="route('siswa.dashboard')" :active="request()->routeIs('siswa.dashboard')"
@@ -129,15 +133,19 @@ new class extends Component {
         class="hidden sm:hidden bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
         <div class="pt-2 pb-3 space-y-1">
             @if(auth()->user()->role === 'guru')
-                <x-nav-link :href="route('guru.dashboard')" :active="request()->routeIs('guru.dashboard')"
+                <x-responsive-nav-link :href="route('guru.dashboard')" :active="request()->routeIs('guru.dashboard')"
                     class="font-bold text-base mt-1 text-gray-600 dark:text-gray-300">
-                    Dasbor Guru
-                </x-nav-link>
+                    Dasbor {{ term('guru') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('guru.kelas')" :active="request()->routeIs('guru.kelas')"
+                    class="font-bold text-base mt-1 text-gray-600 dark:text-gray-300">
+                    Kelola {{ term('kelas') }}
+                </x-responsive-nav-link>
             @else
-                <x-nav-link :href="route('siswa.dashboard')" :active="request()->routeIs('siswa.dashboard')"
+                <x-responsive-nav-link :href="route('siswa.dashboard')" :active="request()->routeIs('siswa.dashboard')"
                     class="font-bold text-base mt-1 text-gray-600 dark:text-gray-300">
                     Arena Ujian
-                </x-nav-link>
+                </x-responsive-nav-link>
             @endif
         </div>
 

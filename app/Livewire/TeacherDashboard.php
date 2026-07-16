@@ -17,6 +17,9 @@ class TeacherDashboard extends Component
 
     public $time_limit = 60;
 
+    // Target kelas ujian; string kosong = semua kelas
+    public $classroom_id = '';
+
     // Variabel khusus mode Edit & Hapus
     public $isEditMode = false;
 
@@ -34,10 +37,12 @@ class TeacherDashboard extends Component
         $this->validate([
             'title' => 'required|min:5',
             'time_limit' => 'required|numeric|min:1',
+            'classroom_id' => 'nullable|exists:classrooms,id',
         ]);
 
         Exam::create([
             'teacher_id' => auth()->id(),
+            'classroom_id' => $this->classroom_id ?: null,
             'title' => $this->title,
             'description' => $this->description,
             'time_limit' => $this->time_limit,
@@ -63,6 +68,7 @@ class TeacherDashboard extends Component
         $this->title = $exam->title;
         $this->description = $exam->description;
         $this->time_limit = $exam->time_limit;
+        $this->classroom_id = $exam->classroom_id ?? '';
 
         $this->isEditMode = true;
     }
@@ -72,6 +78,7 @@ class TeacherDashboard extends Component
         $this->validate([
             'title' => 'required|min:5',
             'time_limit' => 'required|numeric|min:1',
+            'classroom_id' => 'nullable|exists:classrooms,id',
         ]);
 
         $exam = $this->findOwnedExam($this->examIdToEdit);
@@ -79,6 +86,7 @@ class TeacherDashboard extends Component
             'title' => $this->title,
             'description' => $this->description,
             'time_limit' => $this->time_limit,
+            'classroom_id' => $this->classroom_id ?: null,
         ]);
 
         $this->resetForm();
@@ -114,7 +122,7 @@ class TeacherDashboard extends Component
 
     private function resetForm()
     {
-        $this->reset(['title', 'description', 'time_limit', 'isEditMode', 'examIdToEdit']);
+        $this->reset(['title', 'description', 'time_limit', 'isEditMode', 'examIdToEdit', 'classroom_id']);
         $this->time_limit = 60;
     }
 
@@ -138,7 +146,7 @@ class TeacherDashboard extends Component
     public function render()
     {
         // 1. Logika Pencarian Pintar (hanya ujian milik guru ini)
-        $query = Exam::ownedBy(auth()->user());
+        $query = Exam::with('classroom')->ownedBy(auth()->user());
         if (strlen($this->search) > 0) {
             $query->where('title', 'like', '%'.$this->search.'%');
         }
@@ -149,6 +157,8 @@ class TeacherDashboard extends Component
         $ujianAktif = Exam::ownedBy(auth()->user())->where('is_active', true)->count();
         $totalSoal = Question::whereHas('exam', fn ($q) => $q->ownedBy(auth()->user()))->count();
 
-        return view('livewire.teacher-dashboard', compact('exams', 'totalUjian', 'ujianAktif', 'totalSoal'));
+        $classrooms = \App\Models\Classroom::orderBy('name')->get();
+
+        return view('livewire.teacher-dashboard', compact('exams', 'totalUjian', 'ujianAktif', 'totalSoal', 'classrooms'));
     }
 }
