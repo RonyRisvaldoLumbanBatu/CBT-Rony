@@ -344,7 +344,7 @@ class TakeExam extends Component
         event(new \App\Events\StudentExamUpdate(
             $this->exam->id,
             auth()->user()->name,
-            '⚠️ PELANGGARAN #'.$this->cheatStrikes.' - '.$reason.'!'
+            'PELANGGARAN #'.$this->cheatStrikes.' - '.$reason.'!'
         ));
 
         if ($this->cheatStrikes >= self::MAX_STRIKES) {

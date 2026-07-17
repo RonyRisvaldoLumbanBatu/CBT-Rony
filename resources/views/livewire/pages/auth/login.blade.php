@@ -48,7 +48,7 @@ new #[Layout('layouts.blank')] class extends Component {
         <div class="w-full max-w-md">
 
             <div class="text-center lg:text-left mb-10">
-                <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Selamat Datang! 👋</h2>
+                <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Selamat Datang!</h2>
                 <p class="text-slate-500 mt-2 font-medium">Silakan masuk ke akun Anda untuk melanjutkan.</p>
             </div>
 

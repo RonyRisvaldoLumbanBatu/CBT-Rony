@@ -424,12 +424,14 @@
                 <div class="grid grid-cols-2 gap-2">
                     <button wire:click="setMode('sekolah')"
                         class="py-3 rounded-xl border-2 font-bold text-sm transition {{ $currentMode === 'sekolah' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300' : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300' }}">
-                        🏫 Sekolah
+                        <x-icon name="building-library" stroke="1.8" class="w-5 h-5 mx-auto mb-1" />
+                        Sekolah
                         <span class="block text-[10px] font-medium mt-0.5">Siswa &amp; Guru</span>
                     </button>
                     <button wire:click="setMode('kampus')"
                         class="py-3 rounded-xl border-2 font-bold text-sm transition {{ $currentMode === 'kampus' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300' : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300' }}">
-                        🎓 Kampus
+                        <x-icon name="academic-cap" stroke="1.8" class="w-5 h-5 mx-auto mb-1" />
+                        Kampus
                         <span class="block text-[10px] font-medium mt-0.5">Mahasiswa &amp; Dosen</span>
                     </button>
                 </div>
