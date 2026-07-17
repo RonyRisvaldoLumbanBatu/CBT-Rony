@@ -5,8 +5,8 @@ use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
 Route::middleware('guest')->group(function () {
-    Volt::route('register', 'pages.auth.register')
-        ->name('register');
+    // Pendaftaran mandiri DITUTUP: semua akun (siswa & guru) dibuat oleh
+    // administrator lewat Panel Admin (/admin/dashboard).
 
     Volt::route('login', 'pages.auth.login')
         ->name('login');

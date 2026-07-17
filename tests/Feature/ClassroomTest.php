@@ -83,26 +83,6 @@ class ClassroomTest extends TestCase
             ->assertOk();
     }
 
-    public function test_registrasi_wajib_pilih_kelas_jika_kelas_tersedia(): void
-    {
-        $response = \Livewire\Volt\Volt::test('pages.auth.register')
-            ->set('name', 'Siswa Baru')
-            ->set('email', 'baru@test.com')
-            ->set('password', 'password123')
-            ->set('password_confirmation', 'password123')
-            ->call('register');
-
-        $response->assertHasErrors(['classroom_id' => 'required']);
-
-        $response->set('classroom_id', (string) $this->kelasA->id)->call('register');
-
-        $this->assertDatabaseHas('users', [
-            'email' => 'baru@test.com',
-            'classroom_id' => $this->kelasA->id,
-            'role' => 'siswa',
-        ]);
-    }
-
     public function test_mode_kampus_mengubah_istilah(): void
     {
         $this->assertSame('Siswa', term('siswa'));
@@ -115,21 +95,21 @@ class ClassroomTest extends TestCase
         $this->assertSame('Kampus', term('sekolah'));
     }
 
-    public function test_guru_bisa_membuat_dan_menghapus_kelas(): void
+    public function test_admin_bisa_membuat_dan_menghapus_kelas(): void
     {
-        $guru = User::factory()->create(['role' => 'guru']);
+        $admin = User::factory()->create(['role' => 'admin']);
 
-        \Livewire\Livewire::actingAs($guru)
-            ->test(\App\Livewire\ManageClassrooms::class)
-            ->set('name', 'XI IPS 3')
+        \Livewire\Livewire::actingAs($admin)
+            ->test(\App\Livewire\AdminPanel::class)
+            ->set('c_name', 'XI IPS 3')
             ->call('createClassroom');
 
         $this->assertDatabaseHas('classrooms', ['name' => 'XI IPS 3']);
 
         $kelas = Classroom::where('name', 'XI IPS 3')->first();
 
-        \Livewire\Livewire::actingAs($guru)
-            ->test(\App\Livewire\ManageClassrooms::class)
+        \Livewire\Livewire::actingAs($admin)
+            ->test(\App\Livewire\AdminPanel::class)
             ->call('deleteClassroom', $kelas->id);
 
         $this->assertDatabaseMissing('classrooms', ['name' => 'XI IPS 3']);

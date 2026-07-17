@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'UjianPintar') }}</title>
+    <title>{{ cbt_name() }} - {{ cbt_institution() }}</title>
+    @if(cbt_logo_url())<link rel="icon" href="{{ cbt_logo_url() }}">@endif
 
     <!-- Fonts -->
 

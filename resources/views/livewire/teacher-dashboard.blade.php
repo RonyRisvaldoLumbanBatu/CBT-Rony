@@ -109,7 +109,7 @@
                         @endforeach
                     </select>
                     @if($classrooms->isEmpty())
-                        <p class="text-xs text-gray-400 mt-1">Belum ada {{ strtolower(term('kelas')) }}. <a href="{{ route('guru.kelas') }}" class="text-indigo-500 font-bold hover:underline">Buat dulu di sini</a>.</p>
+                        <p class="text-xs text-gray-400 mt-1">Belum ada {{ strtolower(term('kelas')) }}. Minta administrator membuatnya lewat Panel Admin.</p>
                     @endif
                     @error('classroom_id') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                 </div>

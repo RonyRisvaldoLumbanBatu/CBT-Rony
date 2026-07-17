@@ -118,11 +118,7 @@ new #[Layout('layouts.blank')] class extends Component {
             </form>
 
             <p class="mt-8 relative text-center text-sm text-slate-500">
-                Belum punya akun?
-                <a href="{{ route('register') }}" wire:navigate
-                    class="font-bold text-teal-600 hover:text-teal-500 transition-colors">
-                    Daftar Bebas Biaya
-                </a>
+                Belum punya akun? Hubungi administrator {{ strtolower(term('sekolah')) }} untuk dibuatkan akun.
             </p>
 
         </div>

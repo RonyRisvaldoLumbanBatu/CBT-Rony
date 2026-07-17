@@ -12,11 +12,21 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 0. Buat data kelas contoh
-        $kelasA = \App\Models\Classroom::create(['name' => 'XII IPA 1']);
-        \App\Models\Classroom::create(['name' => 'XII IPA 2']);
+        // 0a. Akun Administrator (pembuat seluruh akun siswa & guru)
+        User::factory()->create([
+            'name' => 'Administrator',
+            'email' => 'admin@ujian.com',
+            'password' => bcrypt('password123'),
+            'role' => 'admin',
+        ]);
 
-        // 1. Buat 1 Akun Guru/Admin agar kita bisa login nanti
+        // 0b. Buat data jurusan & kelas contoh
+        $ipa = \App\Models\Major::create(['name' => 'IPA']);
+        \App\Models\Major::create(['name' => 'IPS']);
+        $kelasA = \App\Models\Classroom::create(['name' => 'XII IPA 1', 'major_id' => $ipa->id]);
+        \App\Models\Classroom::create(['name' => 'XII IPA 2', 'major_id' => $ipa->id]);
+
+        // 1. Buat 1 Akun Guru agar kita bisa login nanti
         $guru = User::factory()->create([
             'name' => 'Pak Guru IT',
             'email' => 'guru@ujian.com',

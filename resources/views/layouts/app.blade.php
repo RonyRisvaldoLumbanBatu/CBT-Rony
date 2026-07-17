@@ -20,7 +20,8 @@
         }
     </script>
 
-    <title>{{ config('app.name', 'Sistem CBT') }}</title>
+    <title>{{ cbt_name() }} - {{ cbt_institution() }}</title>
+    @if(cbt_logo_url())<link rel="icon" href="{{ cbt_logo_url() }}">@endif
 
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])

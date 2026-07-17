@@ -6,12 +6,17 @@ Route::view('/', 'welcome');
 
 // 1. Redirector Utama (Polisi Lalu Lintas)
 Route::get('/dashboard', function () {
-    if (auth()->user()->role === 'guru') {
-        return redirect()->route('guru.dashboard');
-    }
-
-    return redirect()->route('siswa.dashboard');
+    return match (auth()->user()->role) {
+        'admin' => redirect()->route('admin.dashboard'),
+        'guru' => redirect()->route('guru.dashboard'),
+        default => redirect()->route('siswa.dashboard'),
+    };
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+// 1b. Panel Administrator (satu dashboard untuk semua administrasi)
+Route::get('/admin/dashboard', \App\Livewire\AdminPanel::class)
+    ->middleware(['auth', 'verified', 'role:admin'])
+    ->name('admin.dashboard');
 
 // 2. Rute Khusus Guru
 Route::get('/guru/dashboard', \App\Livewire\TeacherDashboard::class)
@@ -53,10 +58,8 @@ Route::get('/pengawas/{id}', \App\Livewire\ProctorDashboard::class)
 // Panel Admin Khusus Guru
 Route::get('/guru/ujian', \App\Livewire\TeacherDashboard::class)->middleware(['auth', 'role:guru']);
 
-// Kelola Kelas & Mode Aplikasi (Khusus Guru)
-Route::get('/guru/kelas', \App\Livewire\ManageClassrooms::class)
-    ->middleware(['auth', 'role:guru'])
-    ->name('guru.kelas');
+// Kelola kelas, jurusan, akun, dan pengaturan aplikasi sekarang
+// terpusat di Panel Administrator (/admin/dashboard).
 
 // Halaman untuk kelola soal (Khusus Guru)
 Route::get('/guru/ujian/{id}/soal', \App\Livewire\ManageQuestions::class)->middleware(['auth', 'role:guru']);
