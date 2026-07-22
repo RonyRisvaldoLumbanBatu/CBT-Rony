@@ -51,16 +51,24 @@ class ExamGrader
 
     /**
      * Skor 0-100 untuk soal yang dinilai otomatis saja (essay diabaikan).
+     * Berbobot: setiap soal menyumbang sesuai kolom points (default 1).
      */
     public function autoScore(Collection $questions, array $answers): float
     {
         $autoQuestions = $questions->whereIn('type', self::AUTO_GRADED_TYPES);
 
-        if ($autoQuestions->isEmpty()) {
+        $totalPoints = $autoQuestions->sum(fn ($q) => max(1, (int) ($q->points ?? 1)));
+
+        if ($totalPoints === 0) {
             return 0.0;
         }
 
-        return ($this->countCorrect($autoQuestions, $answers) / $autoQuestions->count()) * 100;
+        $earnedPoints = $autoQuestions
+            ->filter(fn ($q) => array_key_exists($q->id, $answers)
+                && $this->isAnswerCorrect($q, $answers[$q->id]))
+            ->sum(fn ($q) => max(1, (int) ($q->points ?? 1)));
+
+        return ($earnedPoints / $totalPoints) * 100;
     }
 
     /**

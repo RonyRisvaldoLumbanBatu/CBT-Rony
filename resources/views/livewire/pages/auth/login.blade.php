@@ -66,7 +66,7 @@ new #[Layout('layouts.blank')] class extends Component {
             <form wire:submit="login" class="space-y-6">
 
                 <div>
-                    <label for="email" class="block text-sm font-bold text-slate-700 mb-2">Alamat Email</label>
+                    <label for="email" class="block text-sm font-bold text-slate-700 mb-2">Username / Email</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -75,9 +75,9 @@ new #[Layout('layouts.blank')] class extends Component {
                                     d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
                             </svg>
                         </div>
-                        <input wire:model="form.email" id="email" type="email" required autofocus
+                        <input wire:model="form.email" id="email" type="text" required autofocus
                             class="block w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition shadow-sm placeholder-slate-400"
-                            placeholder="guru@ujian.com">
+                            placeholder="username atau email">
                     </div>
                 </div>
 

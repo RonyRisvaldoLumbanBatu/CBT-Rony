@@ -17,9 +17,14 @@ class Exam extends Model
     protected $fillable = [
         'teacher_id',
         'classroom_id',
+        'subject_id',
         'title',
         'description',
         'time_limit',
+        'kkm',
+        'starts_at',
+        'ends_at',
+        'results_released',
         'is_active',
         'token',
     ];
@@ -31,6 +36,9 @@ class Exam extends Model
     {
         return [
             'is_active' => 'boolean',
+            'results_released' => 'boolean',
+            'starts_at' => 'datetime',
+            'ends_at' => 'datetime',
         ];
     }
 
@@ -48,6 +56,62 @@ class Exam extends Model
     public function classroom(): BelongsTo
     {
         return $this->belongsTo(Classroom::class);
+    }
+
+    /**
+     * Relasi: Mata pelajaran ujian ini.
+     */
+    public function subject(): BelongsTo
+    {
+        return $this->belongsTo(Subject::class);
+    }
+
+    /**
+     * Relasi: status pengerjaan peserta (untuk radar pengawas).
+     */
+    public function attempts(): HasMany
+    {
+        return $this->hasMany(ExamAttempt::class);
+    }
+
+    /**
+     * Apakah ujian bisa dikerjakan SEKARANG?
+     * - Harus diaktifkan guru (is_active).
+     * - Jika jadwal diisi, waktu sekarang harus berada dalam rentangnya.
+     */
+    public function isOpen(): bool
+    {
+        if (! $this->is_active) {
+            return false;
+        }
+
+        if ($this->starts_at && now()->lt($this->starts_at)) {
+            return false;
+        }
+
+        if ($this->ends_at && now()->gt($this->ends_at)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Ujian aktif yang jadwal mulainya masih di masa depan.
+     */
+    public function isUpcoming(): bool
+    {
+        return $this->is_active && $this->starts_at && now()->lt($this->starts_at);
+    }
+
+    /**
+     * Scope: ujian yang bisa dikerjakan sekarang (aktif + dalam jadwal).
+     */
+    public function scopeOpenNow(Builder $query): Builder
+    {
+        return $query->where('is_active', true)
+            ->where(fn ($q) => $q->whereNull('starts_at')->orWhere('starts_at', '<=', now()))
+            ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>=', now()));
     }
 
     /**

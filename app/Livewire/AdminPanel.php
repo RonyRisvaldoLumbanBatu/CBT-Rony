@@ -6,21 +6,24 @@ use App\Models\Classroom;
 use App\Models\Exam;
 use App\Models\Major;
 use App\Models\Setting;
+use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 
 /**
  * Panel Administrator: satu dashboard untuk seluruh administrasi CBT.
- * Tab: ringkasan (monitoring ujian), pengguna, kelas & jurusan, pengaturan aplikasi.
+ * Menu: ringkasan (monitoring ujian), pengguna, kelas & jurusan,
+ * mata pelajaran, pengaturan aplikasi.
  */
 #[Layout('layouts.app')]
 class AdminPanel extends Component
 {
-    use WithFileUploads;
+    use WithFileUploads, WithPagination;
 
     public $tab = 'ringkasan';
 
@@ -35,6 +38,10 @@ class AdminPanel extends Component
 
     public $u_name = '';
 
+    public $u_username = '';
+
+    public $u_nis = '';
+
     public $u_email = '';
 
     public $u_password = '';
@@ -42,6 +49,12 @@ class AdminPanel extends Component
     public $u_role = 'siswa';
 
     public $u_classroom_id = '';
+
+    // Import siswa massal dari Excel
+    public $importFile;
+
+    // ===== Tab Mata Pelajaran =====
+    public $sub_name = '';
 
     // ===== Tab Kelas & Jurusan =====
     public $m_name = '';
@@ -76,8 +89,9 @@ class AdminPanel extends Component
 
     public function setTab($tab)
     {
-        if (in_array($tab, ['ringkasan', 'pengguna', 'kelas', 'pengaturan'])) {
+        if (in_array($tab, ['ringkasan', 'pengguna', 'kelas', 'mapel', 'pengaturan'])) {
             $this->tab = $tab;
+            $this->resetPage();
         }
     }
 
@@ -96,6 +110,8 @@ class AdminPanel extends Component
         $user = User::findOrFail($id);
         $this->editingUserId = $user->id;
         $this->u_name = $user->name;
+        $this->u_username = $user->username ?? '';
+        $this->u_nis = $user->nis ?? '';
         $this->u_email = $user->email;
         $this->u_role = $user->role;
         $this->u_classroom_id = $user->classroom_id ?? '';
@@ -105,9 +121,13 @@ class AdminPanel extends Component
 
     public function saveUser()
     {
+        $uniqueSuffix = $this->editingUserId ? ','.$this->editingUserId : '';
+
         $rules = [
             'u_name' => 'required|string|max:255',
-            'u_email' => 'required|email|max:255|unique:users,email'.($this->editingUserId ? ','.$this->editingUserId : ''),
+            'u_username' => 'required|string|max:50|alpha_dash|unique:users,username'.$uniqueSuffix,
+            'u_nis' => 'nullable|string|max:30',
+            'u_email' => 'nullable|email|max:255|unique:users,email'.$uniqueSuffix,
             'u_role' => 'required|in:siswa,guru',
             'u_classroom_id' => 'nullable|exists:classrooms,id',
             // Password wajib saat buat akun baru; opsional saat edit (isi = ganti)
@@ -118,13 +138,18 @@ class AdminPanel extends Component
 
         $data = [
             'name' => $this->u_name,
-            'email' => strtolower($this->u_email),
+            'username' => strtolower($this->u_username),
+            'nis' => $this->u_nis ?: null,
+            // Email opsional (siswa sering tidak punya) -> pakai alamat lokal
+            'email' => strtolower($this->u_email ?: $this->u_username.'@cbt.local'),
             'role' => $this->u_role,
             'classroom_id' => $this->u_role === 'siswa' ? ($this->u_classroom_id ?: null) : null,
         ];
 
         if ($this->u_password) {
             $data['password'] = Hash::make($this->u_password);
+            // Disimpan untuk dicetak di kartu peserta (konvensi CBT sekolah)
+            $data['plain_password'] = $this->u_password;
         }
 
         if ($this->editingUserId) {
@@ -168,9 +193,44 @@ class AdminPanel extends Component
 
     private function resetUserForm()
     {
-        $this->reset(['editingUserId', 'u_name', 'u_email', 'u_password', 'u_classroom_id']);
+        $this->reset(['editingUserId', 'u_name', 'u_username', 'u_nis', 'u_email', 'u_password', 'u_classroom_id']);
         $this->u_role = 'siswa';
         $this->resetErrorBag();
+    }
+
+    // === Import siswa massal dari Excel ===
+
+    public function downloadSiswaTemplate()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\SiswaTemplateExport,
+            'Template_Import_Siswa.xlsx'
+        );
+    }
+
+    public function importSiswa()
+    {
+        $this->validate(['importFile' => 'required|mimes:xlsx,xls,csv|max:2048']);
+
+        \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\SiswaImport, $this->importFile);
+        $this->reset('importFile');
+        session()->flash('sukses', 'Import '.strtolower(term('siswa')).' selesai! Cek daftar pengguna di bawah.');
+    }
+
+    // === Mata Pelajaran ===
+
+    public function createSubject()
+    {
+        $this->validate(['sub_name' => 'required|min:2|max:80|unique:subjects,name']);
+        Subject::create(['name' => $this->sub_name]);
+        $this->reset('sub_name');
+        session()->flash('sukses', 'Mata pelajaran baru berhasil dibuat!');
+    }
+
+    public function deleteSubject($id)
+    {
+        Subject::findOrFail($id)->delete();
+        session()->flash('sukses', 'Mata pelajaran dihapus. Ujian terkait menjadi tanpa mapel.');
     }
 
     // =====================================================================
@@ -317,16 +377,19 @@ class AdminPanel extends Component
             ->when(strlen($this->userSearch) > 0, fn ($q) => $q->where(
                 fn ($qq) => $qq->where('name', 'like', '%'.$this->userSearch.'%')
                     ->orWhere('email', 'like', '%'.$this->userSearch.'%')
+                    ->orWhere('username', 'like', '%'.$this->userSearch.'%')
+                    ->orWhere('nis', 'like', '%'.$this->userSearch.'%')
             ))
             ->orderBy('role')
             ->orderBy('name')
-            ->get();
+            ->paginate(15);
 
         return view('livewire.admin-panel', [
             'ujianBerlangsung' => $ujianBerlangsung,
             'users' => $users,
             'classrooms' => Classroom::with('major')->withCount('students')->orderBy('name')->get(),
             'majors' => Major::withCount('classrooms')->orderBy('name')->get(),
+            'subjects' => Subject::withCount('exams')->orderBy('name')->get(),
             'stats' => [
                 'siswa' => User::where('role', 'siswa')->count(),
                 'guru' => User::where('role', 'guru')->count(),

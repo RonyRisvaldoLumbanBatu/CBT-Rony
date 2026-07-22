@@ -61,6 +61,16 @@ Route::get('/guru/ujian', \App\Livewire\TeacherDashboard::class)->middleware(['a
 // Kelola kelas, jurusan, akun, dan pengaturan aplikasi sekarang
 // terpusat di Panel Administrator (/admin/dashboard).
 
+// Cetak kartu peserta per kelas (Khusus Admin)
+Route::get('/admin/kelas/{id}/kartu-peserta', [\App\Http\Controllers\PrintController::class, 'participantCards'])
+    ->middleware(['auth', 'role:admin'])->name('admin.kartu');
+
+// Cetak daftar hadir & berita acara ujian (Khusus Guru)
+Route::get('/guru/ujian/{id}/daftar-hadir', [\App\Http\Controllers\PrintController::class, 'attendanceList'])
+    ->middleware(['auth', 'role:guru']);
+Route::get('/guru/ujian/{id}/berita-acara', [\App\Http\Controllers\PrintController::class, 'officialReport'])
+    ->middleware(['auth', 'role:guru']);
+
 // Halaman untuk kelola soal (Khusus Guru)
 Route::get('/guru/ujian/{id}/soal', \App\Livewire\ManageQuestions::class)->middleware(['auth', 'role:guru']);
 
