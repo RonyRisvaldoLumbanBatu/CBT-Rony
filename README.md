@@ -1,84 +1,59 @@
-# CBT Rony - Computer Based Test
+# Aplikasi Ujian Online Universitas
 
-Aplikasi Computer Based Test (CBT) modern yang dibangun dengan **Laravel 12**, **Livewire 3**, dan **PostgreSQL**.
+Aplikasi ujian online berbasis web (model lab/ruang/sesi/token) untuk lingkungan
+universitas. Dibangun ulang dari nol dengan **Rust (Axum)** di backend dan
+**React + TypeScript** di frontend.
 
-## 🚀 Fitur Utama
-- **Modern Stack:** Laravel 12 + Livewire 3 + Tailwind CSS.
-- **Reactivity:** Menggunakan Livewire Volt untuk komponen single-file yang kencang.
-- **Real-time:** Integrasi Laravel Reverb untuk monitoring ujian secara langsung.
-- **Modern UI:** Tailwind CSS v3 dengan desain yang responsif.
-- **Strict Mode:** Mengaktifkan Laravel Strict Database Mode untuk kualitas kode terbaik.
+> Versi lama (Laravel) diarsipkan di branch `laravel-legacy`.
 
-## 🛠️ Persyaratan Sistem
-- PHP 8.2 atau lebih baru.
-- Composer.
-- Node.js & NPM.
-- PostgreSQL (Disarankan menggunakan **DBngin** jika di Windows/Mac).
-- **Laravel Herd** (Disarankan untuk pengembangan lokal yang cepat).
+## Struktur
 
-## ⚙️ Instalasi Lokal
-
-1.  **Clone Repository:**
-    ```bash
-    git clone https://github.com/username/cbt-rony.git
-    cd cbt-rony
-    ```
-
-2.  **Instal Dependensi Backend:**
-    ```bash
-    composer install
-    ```
-
-3.  **Instal Dependensi Frontend:**
-    ```bash
-    npm install
-    npm run build
-    ```
-
-4.  **Konfigurasi Environment:**
-    Salin file `.env.example` menjadi `.env` dan sesuaikan pengaturan database Anda:
-    ```bash
-    cp .env.example .env
-    php artisan key:generate
-    ```
-
-    Contoh pengaturan **PostgreSQL (DBngin)**:
-    ```env
-    DB_CONNECTION=pgsql
-    DB_HOST=127.0.0.1
-    DB_PORT=5432
-    DB_DATABASE=cbt_rony
-    DB_USERNAME=postgres
-    DB_PASSWORD=
-    ```
-
-5.  **Jalankan Migrasi & Seeder:**
-    ```bash
-    php artisan migrate --seed
-    ```
-
-6.  **Hubungkan Storage:**
-    ```bash
-    php artisan storage:link
-    ```
-
-## 🔐 Akun Login Default
-Setelah menjalankan seeder, Anda dapat login menggunakan akun berikut:
-- **Email:** `guru@cbt.test`
-- **Password:** `password`
-- **Role:** `guru`
-
-## 👨‍💻 Pengembangan
-Untuk menjalankan server pengembangan lokal:
-```bash
-php artisan serve
-# atau gunakan Laravel Herd
+```
+backend/    Rust + Axum + SQLx (PostgreSQL) + JWT + Argon2
+frontend/   React + TypeScript + Vite + Tailwind + TanStack Query
 ```
 
-Untuk melihat perubahan frontend secara real-time:
+## Prasyarat (mesin ini)
+
+Toolchain Rust ada di `C:\Rony\rust-tools` (dipindah ke sana karena home user
+mengandung spasi yang mematahkan linker GNU). **Sebelum menjalankan cargo,
+source dulu env-nya:**
+
 ```bash
-npm run dev
+source /c/Rony/rust-tools/env.sh
 ```
 
----
-Dibuat dengan ❤️ menggunakan **Laravel 12**.
+## Menjalankan backend
+
+```bash
+source /c/Rony/rust-tools/env.sh
+cd backend
+cp .env.example .env          # sesuaikan DATABASE_URL bila perlu
+cargo run --bin seed          # isi data awal (sekali)
+cargo run                     # server di http://localhost:3000
+```
+
+Database `ujian_online` di PostgreSQL lokal. Migrasi otomatis dijalankan saat
+server start (`sqlx::migrate!`).
+
+### Akun seed (password semua: `password123`)
+
+| Peran      | Login                                    |
+|------------|------------------------------------------|
+| superadmin | superadmin@kampus.ac.id                  |
+| admin      | admin@kampus.ac.id                       |
+| dosen      | budi@kampus.ac.id / NIP 198001012005011001 |
+| mahasiswa  | NIM 2025001 / 2025002 / 2025003          |
+
+### Endpoint (Fase 0)
+
+- `GET  /health`
+- `POST /api/auth/register` (self-register → mahasiswa)
+- `POST /api/auth/login` (identifier = email atau NIM/NIP)
+- `POST /api/auth/refresh`
+- `GET  /api/auth/me` (perlu `Authorization: Bearer <access_token>`)
+
+## Status
+
+Fase 0 (fondasi): skema 20 tabel, autentikasi JWT + RBAC, seed. Selesai.
+Berikutnya — Fase 1: alur inti ujian (buat ujian → kerjakan → auto-grade).

@@ -1,31 +1,12 @@
-/node_modules
-/public/build
-/public/hot
-/public/storage
-/storage/*.key
-/storage/pail
-/storage/logs/*.log
-/vendor
+# Rust / backend
+/backend/target/
+
+# Environment (jangan commit rahasia; pakai .env.example sebagai contoh)
 .env
-.env.backup
-.env.production
-.phpactor.json
-.phpunit.result.cache
-.DS_Store
-Thumbs.db
+
+# Node / frontend
+/frontend/node_modules/
+/frontend/dist/
+
+# Log & sementara
 *.log
-.gemini/
-.agents/
-GEMINI.md
-database/*.sqlite
-database/*.sqlite-journal
-/.fleet
-/.idea
-/.nova
-/.phpunit.cache
-/.vscode
-/.zed
-/auth.json
-Homestead.json
-Homestead.yaml
-/.claude

@@ -1,0 +1,7 @@
+//! Modul autentikasi: hashing password, JWT, dan extractor RBAC.
+
+pub mod extractor;
+pub mod jwt;
+pub mod password;
+
+pub use extractor::AuthUser;
