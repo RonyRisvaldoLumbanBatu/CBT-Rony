@@ -9,6 +9,7 @@ pub mod config;
 pub mod error;
 pub mod handlers;
 pub mod models;
+pub mod services;
 pub mod state;
 
 use axum::{
@@ -68,6 +69,37 @@ pub async fn run() -> anyhow::Result<()> {
         .route("/api/auth/login", post(handlers::auth::login))
         .route("/api/auth/refresh", post(handlers::auth::refresh))
         .route("/api/auth/me", get(handlers::auth::me))
+        // --- Dosen: susun ujian & soal (Fase 1) ---
+        .route(
+            "/api/dosen/exams",
+            post(handlers::dosen::create_exam).get(handlers::dosen::list_exams),
+        )
+        .route(
+            "/api/dosen/exams/{id}/questions",
+            post(handlers::dosen::add_question),
+        )
+        // --- Mahasiswa: alur inti mengerjakan ujian (Fase 1) ---
+        .route("/api/mahasiswa/exams", get(handlers::mahasiswa::list_available))
+        .route(
+            "/api/mahasiswa/exams/{id}/start",
+            post(handlers::mahasiswa::start_attempt),
+        )
+        .route(
+            "/api/mahasiswa/attempts/{id}",
+            get(handlers::mahasiswa::get_attempt),
+        )
+        .route(
+            "/api/mahasiswa/attempts/{id}/answers",
+            post(handlers::mahasiswa::save_answer),
+        )
+        .route(
+            "/api/mahasiswa/attempts/{id}/submit",
+            post(handlers::mahasiswa::submit),
+        )
+        .route(
+            "/api/mahasiswa/attempts/{id}/result",
+            get(handlers::mahasiswa::get_result),
+        )
         .layer(TraceLayer::new_for_http())
         .layer(cors)
         .with_state(state);

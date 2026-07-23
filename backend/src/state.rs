@@ -13,3 +13,10 @@ pub struct AppState {
     pub db: PgPool,
     pub config: Arc<Config>,
 }
+
+impl AppState {
+    /// Pintasan ke pool DB (dipakai handler & helper).
+    pub fn db_ref(&self) -> &PgPool {
+        &self.db
+    }
+}
